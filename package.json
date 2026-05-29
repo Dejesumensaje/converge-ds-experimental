@@ -1,6 +1,6 @@
 {
   "name": "@dejesumensaje/converge-ds-experimental",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.4",
   "private": false,
   "type": "module",
   "files": [
@@ -15,12 +15,14 @@
       "import": "./dist/converge-ds.js",
       "require": "./dist/converge-ds.umd.cjs"
     },
+    "./styles.css": "./dist/converge-ds.css",
     "./styles": "./dist/converge-ds.css"
   },
   "sideEffects": ["./dist/converge-ds.css"],
   "scripts": {
     "dev": "vite",
-    "build": "tsc --project tsconfig.lib.json --noEmit && vite build",
+    "build": "vite build",
+    "build:lib": "tsc --project tsconfig.lib.json --noEmit && BUILD_LIB=true vite build",
     "typecheck": "tsc -b",
     "preview": "vite preview"
   },
@@ -47,7 +49,7 @@
     "vite-plugin-dts": "^4.5.0"
   },
   "peerDependencies": {
-    "react": "^18",
-    "react-dom": "^18"
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19"
   }
 }

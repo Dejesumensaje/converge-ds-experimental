@@ -1,4 +1,5 @@
 import './styles/globals.css'
+import './styles/playground.css'
 import React, { useState } from 'react'
 
 // UI components
