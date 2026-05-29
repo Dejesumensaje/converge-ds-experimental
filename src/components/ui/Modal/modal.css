@@ -1,0 +1,44 @@
+/* ================================================================
+   Modal — keyframe animations
+   ================================================================
+   IMPORTANT: Do NOT animate `transform` here. The Dialog.Content
+   uses Tailwind's CSS-variable-based transform for centering
+   (-translate-x-1/2 -translate-y-1/2). Animating `transform` in
+   keyframes overrides those variables, causing a visible positional
+   jump when the animation ends and the Tailwind transform takes back
+   over.
+
+   Solution: use the CSS Transforms Level 2 `scale` standalone
+   property (supported Chrome 104+, Firefox 72+, Safari 14.1+).
+   `scale` composes with `transform` without conflict, so centering
+   is never disturbed.
+   ================================================================ */
+
+@keyframes modal-overlay-show {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modal-overlay-hide {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes modal-content-show {
+  from { opacity: 0; scale: 0.97; }
+  to   { opacity: 1; scale: 1; }
+}
+
+@keyframes modal-content-hide {
+  from { opacity: 1; scale: 1; }
+  to   { opacity: 0; scale: 0.97; }
+}
+
+.modal-overlay[data-state='open']   { animation: modal-overlay-show 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+.modal-overlay[data-state='closed'] { animation: modal-overlay-hide  140ms ease-in; }
+
+.modal-content {
+  will-change: opacity, scale;
+}
+.modal-content[data-state='open']   { animation: modal-content-show 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.modal-content[data-state='closed'] { animation: modal-content-hide  160ms ease-in; }

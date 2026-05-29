@@ -1,0 +1,45 @@
+/* ================================================================
+   Drawer — keyframe animations
+   ================================================================
+   Motion intent: "contextual workspace panel" — premium & calm.
+   The panel appears ALREADY NEAR its final position (32px offset),
+   not from off-screen. Short travel = enterprise confidence.
+
+   Safe to animate `transform` here because Drawer content uses
+   `fixed inset-y-0 right-0` — no Tailwind centering transforms
+   that could conflict (unlike Modal's -translate-x/y-1/2).
+   ================================================================ */
+
+@keyframes drawer-overlay-show {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes drawer-overlay-hide {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Slide in from 32px right of final position + fade */
+@keyframes drawer-slide-in {
+  from { transform: translateX(32px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Slide out subtly to the right + fade */
+@keyframes drawer-slide-out {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(16px); opacity: 0; }
+}
+
+.drawer-overlay {
+  will-change: opacity;
+}
+.drawer-overlay[data-state='open']   { animation: drawer-overlay-show 200ms ease; }
+.drawer-overlay[data-state='closed'] { animation: drawer-overlay-hide  160ms ease-in; }
+
+.drawer-content {
+  will-change: transform, opacity;
+}
+.drawer-content[data-state='open']   { animation: drawer-slide-in  240ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-content[data-state='closed'] { animation: drawer-slide-out 160ms ease-in; }

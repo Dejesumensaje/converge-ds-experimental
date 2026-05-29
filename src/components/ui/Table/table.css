@@ -1,0 +1,276 @@
+/* =================================================================
+   CONVERGE DS — Table
+   All variant, density, and row-state styles live here.
+   Component JSX handles layout (flex, gap) via Tailwind.
+   ================================================================= */
+
+/* ── Base ───────────────────────────────────────────────────────── */
+
+.table-base {
+  width: 100%;
+  /* IBM Plex Sans preferred for data tables; falls back to Open Sans */
+  font-family: 'IBM Plex Sans', 'Open Sans', sans-serif;
+  color: var(--foreground);
+  /* Tabular numbers: all digits same width — critical for price/stat columns */
+  font-feature-settings: 'tnum';
+}
+
+/* ── Header background (all variants) ───────────────────────────── */
+/*
+ * Applies var(--muted) to every <th> in <thead>, giving the header
+ * a uniform lifted look that separates it from the body.
+ * Spacers override this with transparent via th.th-spacer below.
+ */
+.table-base thead th {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+/* ── Density: padding for th and td ─────────────────────────────── */
+
+.table-density-compact th,
+.table-density-compact td {
+  padding: 8px var(--spacing-l);
+}
+
+.table-density-normal th,
+.table-density-normal td {
+  padding: 12px var(--spacing-l);
+}
+
+.table-density-comfortable th,
+.table-density-comfortable td {
+  padding: 16px var(--spacing-l);
+}
+
+/* ── Variant: default ────────────────────────────────────────────── */
+
+.table-variant-default {
+  border-collapse: collapse;
+}
+
+.table-variant-default thead tr:last-child {
+  border-bottom: 1px solid var(--neutral-gray3);
+}
+
+.table-variant-default tbody td {
+  border-bottom: 1px solid var(--neutral-gray3);
+}
+
+/* ── Variant: zebra ──────────────────────────────────────────────── */
+
+.table-variant-zebra {
+  border-collapse: collapse;
+}
+
+.table-variant-zebra thead tr:last-child {
+  border-bottom: 1px solid var(--neutral-gray3);
+}
+
+.table-variant-zebra tbody td {
+  border-bottom: 1px solid var(--neutral-gray3);
+}
+
+.table-variant-zebra tbody tr:nth-child(even) > td {
+  background: color-mix(in srgb, var(--muted) 60%, transparent);
+}
+
+/* ── Variant: standout ───────────────────────────────────────────── */
+/*
+ * border-spacing applies to the entire table — the gap also appears
+ * between the header row and first body row. This is accepted as a
+ * deliberate visual affordance (gives the header clear breathing room).
+ */
+
+.table-variant-standout {
+  border-collapse: separate;
+  border-spacing: 0 var(--spacing-s);   /* normal density: 8px vertical gap */
+}
+
+.table-variant-standout.table-density-compact {
+  border-spacing: 0 var(--spacing-xxs); /* 4px */
+}
+
+.table-variant-standout.table-density-comfortable {
+  border-spacing: 0 var(--spacing-m);   /* 12px */
+}
+
+.table-variant-standout thead tr {
+  border-bottom: 2px solid var(--neutral-dark);
+}
+
+/* Each body row is a white "card" */
+.table-variant-standout tbody > tr > td {
+  background: var(--neutral-light);
+}
+
+/* Pill endpoints — first and last cell get the radius */
+.table-variant-standout tbody > tr > td:first-child {
+  border-top-left-radius: var(--radius-full);
+  border-bottom-left-radius: var(--radius-full);
+  padding-left: var(--spacing-xl);
+}
+
+.table-variant-standout tbody > tr > td:last-child {
+  border-top-right-radius: var(--radius-full);
+  border-bottom-right-radius: var(--radius-full);
+  padding-right: var(--spacing-xl);
+}
+
+/* ── Variant: minimal ────────────────────────────────────────────── */
+
+.table-variant-minimal {
+  border-collapse: collapse;
+}
+
+.table-variant-minimal thead th {
+  background: transparent;
+}
+
+.table-variant-minimal thead tr {
+  border-bottom: 1px solid var(--neutral-gray3);
+}
+
+/* No td borders — open-air, whitespace-driven separation */
+
+/* ── Row states ──────────────────────────────────────────────────── */
+
+.tr-row-clickable {
+  cursor: pointer;
+}
+
+.tr-row-clickable:hover > td {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+/*
+ * !important beats:
+ *   - zebra nth-child (specificity 0-2-3)
+ *   - standout tbody td bg (specificity 0-2-1)
+ * This ensures selected is always visually clear.
+ */
+.tr-row-selected > td {
+  background: color-mix(in srgb, var(--selection) 8%, transparent) !important;
+}
+
+.tr-row-clickable.tr-row-selected:hover > td {
+  background: color-mix(in srgb, var(--selection) 12%, transparent) !important;
+}
+
+.tr-row-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Standout: hover/selected blend with the white card base */
+.table-variant-standout .tr-row-clickable:hover > td {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--neutral-light)) !important;
+}
+
+.table-variant-standout .tr-row-selected > td {
+  background: color-mix(in srgb, var(--selection) 10%, var(--neutral-light)) !important;
+}
+
+.table-variant-standout .tr-row-clickable.tr-row-selected:hover > td {
+  background: color-mix(in srgb, var(--selection) 15%, var(--neutral-light)) !important;
+}
+
+/* ── Header cell ─────────────────────────────────────────────────── */
+
+.th-cell {
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+/* ── Vertical borders — grouped headers only ─────────────────────── */
+/*
+ * :has(tr:nth-child(2)) matches only when thead has 2+ rows (grouped
+ * headers). Simple tables (single header row) get no vertical borders.
+ * With border-collapse:collapse adjacent borders merge into a single
+ * 1px line — no doubling, no gaps.
+ */
+.table-base thead:has(tr:nth-child(2)) th {
+  border-left: 1px solid var(--neutral-gray3);
+  border-right: 1px solid var(--neutral-gray3);
+}
+
+/* Remove border on the absolute left and right edges of the header.
+ * Scoped to tr:first-child only — row 2 cells (Current, Suggested,
+ * Variance) intentionally keep their borders because the rowSpan cells
+ * (Item, Status) from row 1 are their true visual neighbours. */
+.table-base thead:has(tr:nth-child(2)) tr:first-child th:first-child {
+  border-left: none;
+}
+.table-base thead:has(tr:nth-child(2)) tr:first-child th:last-child {
+  border-right: none;
+}
+
+.th-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Header icon buttons (sort / filter / search) ────────────────── */
+
+.th-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;        /* intentional 4px — smaller than --radius-m (8px) for tight icon buttons */
+  cursor: pointer;
+  color: var(--foreground);
+  line-height: 1;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+.th-icon-btn:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  color: var(--foreground);
+}
+
+.th-icon-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ring) 40%, transparent);
+  outline-offset: 1px;
+}
+
+.th-icon-btn--active {
+  color: var(--foreground);
+}
+
+/* ── Group header cell ───────────────────────────────────────────── */
+
+.th-group-cell {
+  vertical-align: bottom;
+}
+
+/* ── Body cell ───────────────────────────────────────────────────── */
+
+.td-cell {
+  vertical-align: middle;
+}
+
+/* ── Slot layout inside TableCell ───────────────────────────────── */
+
+.cell-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;  /* --spacing-m */
+}
+
+.cell-leading {
+  flex-shrink: 0;
+}
+
+.cell-text {
+  flex: 1 1 0%;
+  min-width: 0;  /* CRITICAL: prevents flex child from overflowing; needed for truncate */
+}
+
+.cell-trailing {
+  flex-shrink: 0;
+}

@@ -1,0 +1,628 @@
+@custom-variant dark (&:is(.dark *));
+
+/* =================================================================
+   CONVERGE DESIGN SYSTEM — theme.css
+   API surface: shadcn naming convention
+   Values: Converge brand (Deloitte green-led)
+   Typography class names: 1:1 with Figma token paths
+   ================================================================= */
+
+:root {
+  --font-size: 16px;
+
+  /* ---------------------------------------------------------------
+     SHADCN SEMANTIC LAYER
+     The API surface that components reference.
+     --------------------------------------------------------------- */
+
+  /* Base surfaces */
+  --background: #FFFFFF;
+  --foreground: #212121;
+
+  --card: #FFFFFF;
+  --card-foreground: #212121;
+  --popover: #FFFFFF;
+  --popover-foreground: #212121;
+
+  /* Brand action colors */
+  --primary: #26890D;             /* Converge green */
+  --primary-foreground: #FFFFFF;
+  --secondary: #595959;
+  --secondary-foreground: #FFFFFF;
+  --accent: #26890D;
+  --accent-foreground: #FFFFFF;
+
+  /* States */
+  --muted: #EBEBEB;               /* gray2 — used for hover backgrounds */
+  --muted-foreground: #9E9E9E;    /* gray4 — secondary/disabled text */
+  --destructive: #DA291C;
+  --destructive-foreground: #FFFFFF;
+  --success: #207F19;
+  --success-foreground: #FFFFFF;
+  --warning: #ED8B00;
+  --warning-foreground: #9F6514;
+  --informative: #005587;
+  --informative-foreground: #FFFFFF;
+
+  /* Form / interaction */
+  --border: #EBEBEB;
+  --input: rgba(0, 0, 0, 0);
+  --input-background: #FFFFFF;
+  --ring: #26890D;
+
+  /* ---------------------------------------------------------------
+     CONVERGE EXTENDED PALETTE
+     --------------------------------------------------------------- */
+
+  /* Text */
+  --text-primary: #212121;
+  --text-secondary: #595959;
+  --text-disabled: #9E9E9E;
+
+  /* Neutrals */
+  --neutral-light: #FFFFFF;
+  --neutral-gray-background: #F8F8F8;
+  --neutral-gray1: #F5F5F5;
+  --neutral-gray2: #EBEBEB;
+  --neutral-gray3: #D9D9D9;
+  --neutral-gray4: #9E9E9E;
+  --neutral-gray5: #666666;
+  --neutral-dark: #000000;
+
+  /* Selection — for "selected/active" states on non-CTA components */
+  /* Kept separate from --primary (brand CTA) to allow independent theming */
+  --selection: #000000;
+  --selection-foreground: #FFFFFF;
+
+  /* Semantic backgrounds */
+  --success-bg-light: #E6F5EB;
+  --success-bg-medium: #B0E1C1;
+  --success-bg-dark: #8AD3A3;
+
+  --error-bg-light: #FDF5F4;
+  --error-bg-medium: #F3BEBB;
+  --error-bg-dark: #ED9E9B;
+
+  --warning-bg-light: #FEF6EA;
+  --warning-bg-medium: #FBE2BC;
+  --warning-bg-dark: #F9D39C;
+
+  --informative-bg-light: #E6F1F7;
+  --informative-bg-medium: #B0D5E5;
+  --informative-bg-dark: #8AC0D8;
+
+  /* Chart colors */
+  --chart-1: #056FAD;
+  --chart-2: #1BA4DE;
+  --chart-3: #0BD9D7;
+  --chart-4: #47BC32;
+  --chart-5: #C4D42C;
+  --chart-6: #8B81F9;
+  --chart-7: #D36FE9;
+
+  /* Heatmap chart scale */
+  --heatmap-50: #FAFCF6;
+  --heatmap-100: #F0F5E4;
+  --heatmap-200: #E8F1D7;
+  --heatmap-300: #DEEAC5;
+  --heatmap-400: #CEE0A9;
+  --heatmap-500: #B6D182;
+
+  /* Chart-paired text colors */
+  --chart-text-1: #1A5D09;
+  --chart-text-2: #005587;
+  --chart-text-3: #007680;
+  --chart-text-4: #567C18;
+  --chart-text-5: #6D7525;
+  --chart-text-6: #5249BC;
+  --chart-text-7: #AD23CA;
+
+  /* Sidebar */
+  --sidebar: #282728;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #26890D;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #26890D;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #FFFFFF;
+  --sidebar-ring: #FFFFFF;
+
+  /* ---------------------------------------------------------------
+     SPACING
+     --------------------------------------------------------------- */
+  --spacing-none: 0;
+  --spacing-tiny: 2px;
+  --spacing-xxs: 4px;
+  --spacing-s: 8px;
+  --spacing-m: 12px;
+  --spacing-l: 16px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
+  --spacing-xxxl: 40px;
+  --spacing-jumbo: 48px;
+  --spacing-jumbox: 64px;
+  --spacing-jumboxx: 80px;
+
+  /* ---------------------------------------------------------------
+     BORDER RADIUS
+     --------------------------------------------------------------- */
+  --radius: 16px;
+  --radius-m: 8px;
+  --radius-l: 16px;
+  --radius-xl: 24px;
+  --radius-full: 100px;
+  --radius-button: 100px;
+  --radius-badge: 100px;
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY VARIABLES
+     --------------------------------------------------------------- */
+  --font-weight-normal: 400;
+  --font-weight-medium: 600;
+
+  --text-h1: 96px;
+  --text-h2: 60px;
+  --text-h3: 48px;
+  --text-h4: 34px;
+  --text-h5: 24px;
+  --text-h6: 20px;
+  --text-h7: 16px;
+  --text-base: 16px;
+  --text-subtitle: 14px;
+  --text-caption: 13px;
+  --text-tooltip: 12px;
+  --text-label: 12px;
+  --text-notification: 10px;
+  --text-display: 27px;
+
+  /* ---------------------------------------------------------------
+     SHADOWS / ELEVATION
+     --------------------------------------------------------------- */
+  --elevation-sm: 0px 1px 1px 0px rgba(0,0,0,0.15), 0px 0px 2px 0px rgba(0,0,0,0.12), 0px 2px 1px 0px rgba(0,0,0,0.15);
+  --elevation-md: 0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -1px rgba(0,0,0,0.06);
+  --elevation-lg: 0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05);
+}
+
+.dark {
+  --background: #212121;
+  --foreground: #FFFFFF;
+  --card: #212121;
+  --card-foreground: #FFFFFF;
+  --popover: #212121;
+  --popover-foreground: #FFFFFF;
+  --primary: #47BC32;
+  --primary-foreground: #212121;
+  --secondary: #9E9E9E;
+  --secondary-foreground: #FFFFFF;
+  --muted: #595959;
+  --muted-foreground: #EBEBEB;
+  --accent: #47BC32;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DA291C;
+  --destructive-foreground: #FFFFFF;
+  --border: #595959;
+  --input: #595959;
+  --ring: #47BC32;
+  --sidebar: #000000;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #47BC32;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #47BC32;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #9E9E9E;
+  --sidebar-ring: #47BC32;
+  --selection: #FFFFFF;
+  --selection-foreground: #212121;
+}
+
+/* =================================================================
+   TAILWIND v4 THEME — exposes tokens as utilities
+   ================================================================= */
+
+@theme inline {
+  /* Colors — shadcn surface */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-informative: var(--informative);
+  --color-informative-foreground: var(--informative-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-ring: var(--ring);
+
+  /* Colors — Converge extended */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-disabled: var(--text-disabled);
+  --color-neutral-light: var(--neutral-light);
+  --color-neutral-gray1: var(--neutral-gray1);
+  --color-neutral-gray2: var(--neutral-gray2);
+  --color-neutral-gray3: var(--neutral-gray3);
+  --color-neutral-gray4: var(--neutral-gray4);
+  --color-neutral-gray5: var(--neutral-gray5);
+  --color-neutral-dark: var(--neutral-dark);
+  --color-selection: var(--selection);
+  --color-selection-foreground: var(--selection-foreground);
+  --color-success-bg-light: var(--success-bg-light);
+  --color-success-bg-medium: var(--success-bg-medium);
+  --color-success-bg-dark: var(--success-bg-dark);
+  --color-error-bg-light: var(--error-bg-light);
+  --color-error-bg-medium: var(--error-bg-medium);
+  --color-error-bg-dark: var(--error-bg-dark);
+  --color-warning-bg-light: var(--warning-bg-light);
+  --color-warning-bg-medium: var(--warning-bg-medium);
+  --color-warning-bg-dark: var(--warning-bg-dark);
+  --color-informative-bg-light: var(--informative-bg-light);
+  --color-informative-bg-medium: var(--informative-bg-medium);
+  --color-informative-bg-dark: var(--informative-bg-dark);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-heatmap-50: var(--heatmap-50);
+  --color-heatmap-100: var(--heatmap-100);
+  --color-heatmap-200: var(--heatmap-200);
+  --color-heatmap-300: var(--heatmap-300);
+  --color-heatmap-400: var(--heatmap-400);
+  --color-heatmap-500: var(--heatmap-500);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Spacing */
+  --spacing-tiny: var(--spacing-tiny);
+  --spacing-xxs: var(--spacing-xxs);
+  --spacing-s: var(--spacing-s);
+  --spacing-m: var(--spacing-m);
+  --spacing-l: var(--spacing-l);
+  --spacing-xl: var(--spacing-xl);
+  --spacing-xxl: var(--spacing-xxl);
+  --spacing-xxxl: var(--spacing-xxxl);
+  --spacing-jumbo: var(--spacing-jumbo);
+  --spacing-jumbox: var(--spacing-jumbox);
+  --spacing-jumboxx: var(--spacing-jumboxx);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-m: var(--radius-m);
+  --radius-l: var(--radius-l);
+  --radius-full: var(--radius-full);
+  --radius-button: var(--radius-button);
+  --radius-badge: var(--radius-badge);
+
+  /* Shadow */
+  --shadow-elevation-sm: var(--elevation-sm);
+  --shadow-elevation-md: var(--elevation-md);
+  --shadow-elevation-lg: var(--elevation-lg);
+}
+
+/* =================================================================
+   BASE LAYER — element defaults and typography
+   ================================================================= */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Open Sans', sans-serif;
+  }
+}
+
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+
+    /* ============================================================
+       ELEMENT DEFAULTS — h1-h6 elements get title styles by default
+       ============================================================ */
+    h1 {
+      font-size: var(--text-h1);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.2;
+      letter-spacing: -1.5px;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    h2 {
+      font-size: var(--text-h2);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    h3 {
+      font-size: var(--text-h3);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.45;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    h4 {
+      font-size: var(--text-h4);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.52;
+      letter-spacing: 0.25px;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    h5 {
+      font-size: var(--text-h5);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.52;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    h6 {
+      font-size: var(--text-h6);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.52;
+      letter-spacing: 0.15px;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.52;
+      letter-spacing: 0.15px;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    label {
+      font-size: var(--text-label);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+      letter-spacing: 0.15px;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.52;
+      letter-spacing: 0.15px;
+      font-family: 'Open Sans', sans-serif;
+    }
+  }  /* end :where() — element defaults only */
+
+  /* ============================================================
+     TITLES — utility classes (Figma path: Titles/H1..H7)
+       Use these when applying heading style to non-heading elements
+       (spans inside cards, badges, etc.)
+       ============================================================ */
+    .titles-h1 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 96px;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: -1.5px;
+    }
+
+    .titles-h2 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 60px;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+
+    .titles-h3 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 48px;
+      font-weight: 400;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+
+    .titles-h4 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 1.52;
+      letter-spacing: 0.25px;
+    }
+
+    .titles-h1-semibold {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 96px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -1.5px;
+    }
+
+    .titles-h2-semibold {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 60px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+
+    .titles-h3-semibold {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 48px;
+      font-weight: 600;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+
+    .titles-h4-semibold {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 34px;
+      font-weight: 600;
+      line-height: 1.52;
+      letter-spacing: 0.25px;
+    }
+
+    .titles-h5 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.52;
+      letter-spacing: 0;
+    }
+
+    .titles-h6 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.52;
+      letter-spacing: 0.15px;
+    }
+
+    .titles-h7 {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.52;
+      letter-spacing: 0.15px;
+    }
+
+    /* ============================================================
+       BODY — utility classes (Figma path: Body/Body1|2/Regular|Semibold)
+       ============================================================ */
+    .body-body1-regular {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.52;
+      letter-spacing: 0.15px;
+    }
+
+    .body-body1-semibold {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.68;
+      letter-spacing: 0.15px;
+    }
+
+    .body-body2-regular {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.62;
+      letter-spacing: 0.17px;
+    }
+
+    .body-body2-semibold {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.52;
+      letter-spacing: 0.17px;
+    }
+
+    /* ============================================================
+       INPUT — utility classes (Figma path: Input/InputText|InputLabel)
+       ============================================================ */
+    .input-inputtext {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.52;
+      letter-spacing: 0.15px;
+    }
+
+    .input-inputlabel {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      letter-spacing: 0.15px;
+    }
+
+    /* ============================================================
+       BUTTON — utility classes (custom, not in Figma typography spec)
+       ============================================================ */
+    .button-small {
+      font-family: 'Open Sans', system-ui, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.4px;
+    }
+
+    .button-medium {
+      font-family: 'Open Sans', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.4px;
+    }
+
+    .button-large {
+      font-family: 'Open Sans', system-ui, sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.4px;
+    }
+
+    /* ============================================================
+       AUXILIARY — utility classes
+       Figma paths: Caption/Caption, Tooltip/Tooltip, Notification/Notification
+       Names mirror Figma exactly to remove translation ambiguity.
+       ============================================================ */
+    .caption-caption {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.52;
+      letter-spacing: 0.2px;
+    }
+
+    .tooltip-tooltip {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.52;
+      letter-spacing: 0;
+    }
+
+  .notification-notification {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.52;
+    letter-spacing: 0;
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}

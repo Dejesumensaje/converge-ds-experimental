@@ -1,0 +1,15 @@
+/* =================================================================
+   BUTTON — glass effect hover
+   Only rules that require !important to override inline styles
+   live here. Base glass styles are applied inline in Button.tsx.
+   ================================================================= */
+
+/* Hover: increase top highlight and blur */
+.btn-glass:hover {
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
