@@ -42,3 +42,15 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
     </p>
   )
 }
+
+/* ===================================================================
+   Row — flex row with consistent gap, used across showcase sections
+   =================================================================== */
+
+export function Row({ children, wrap = true }: { children: React.ReactNode; wrap?: boolean }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: wrap ? 'wrap' : 'nowrap' }}>
+      {children}
+    </div>
+  )
+}

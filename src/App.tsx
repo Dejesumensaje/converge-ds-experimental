@@ -10,8 +10,7 @@ import {
   CountBadge,
   Chip,
   Input,
-  Select,
-  SearchInput,
+  Switch,
   Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
   MetricCard,
   InformativeCard,
@@ -24,7 +23,6 @@ import {
   AlertModal,
   FullScreenAlert,
   Drawer,
-  type SelectOption,
   type TabItem,
 } from './components/ui'
 
@@ -35,19 +33,23 @@ import { Footer } from './components/layout/Footer/Footer'
 
 // Icons
 import {
-  Mail, Lock, Plus, Download, Trash2, Edit3,
+  Mail, Plus, Download,
   LayoutDashboard, ShoppingCart, BarChart2, Settings, Users,
   TrendingUp,
   Star,
 } from 'lucide-react'
 
 // Playground helpers + section modules
-import { ComponentHeader, SectionLabel } from './playground/helpers'
+import { ComponentHeader, SectionLabel, Row } from './playground/helpers'
 import { ColorsSection } from './playground/sections/ColorsSection'
 import { TypographySection } from './playground/sections/TypographySection'
 import { SpacingSection } from './playground/sections/SpacingSection'
-import { ToggleGroupSection } from './playground/sections/ToggleGroupSection'
+import { ButtonSection } from './playground/sections/ButtonSection'
+import { InputSection } from './playground/sections/InputSection'
+import { SelectSection } from './playground/sections/SelectSection'
 import { SwitchSection } from './playground/sections/SwitchSection'
+import { ToggleGroupSection } from './playground/sections/ToggleGroupSection'
+import { SearchInputSection } from './playground/sections/SearchInputSection'
 
 /* ===================================================================
    Nav data
@@ -183,10 +185,6 @@ function PreviewFrame({
 }: {
   children: React.ReactNode
   height?: number
-  /**
-   * When true, applies CSS transform so position:fixed descendants are
-   * contained within this frame (used for Header preview).
-   */
   contained?: boolean
 }) {
   return (
@@ -198,8 +196,6 @@ function PreviewFrame({
         borderRadius: 12,
         overflow: 'hidden',
         background: 'var(--neutral-gray-background)',
-        /* CSS transform trick: makes position:fixed descendants treat this
-           element as their containing block (CSS spec §9.6.2) */
         ...(contained ? { transform: 'translateZ(0)' } : {}),
       }}
     >
@@ -209,28 +205,8 @@ function PreviewFrame({
 }
 
 /* ===================================================================
-   Row helper
-   =================================================================== */
-
-function Row({ children, wrap = true }: { children: React.ReactNode; wrap?: boolean }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: wrap ? 'wrap' : 'nowrap' }}>
-      {children}
-    </div>
-  )
-}
-
-/* ===================================================================
    Static data — defined outside App to avoid recreation on re-render
    =================================================================== */
-
-const FRUIT_OPTIONS: SelectOption[] = [
-  { value: 'apple',      label: 'Apple' },
-  { value: 'banana',     label: 'Banana' },
-  { value: 'cherry',     label: 'Cherry' },
-  { value: 'durian',     label: 'Durian' },
-  { value: 'elderberry', label: 'Elderberry' },
-]
 
 const SIDEBAR_NAV_ITEMS: SidebarItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -267,8 +243,8 @@ const TAB_WITH_DISABLED: TabItem[] = [
 ]
 
 const LONG_ROWS = Array.from({ length: 18 }, (_, i) => {
-  const names   = ['Alice Johnson', 'Bob Martinez', 'Carol White', 'David Park', 'Eva Chen', 'Frank Lee']
-  const roles   = ['Admin', 'Editor', 'Viewer', 'Editor', 'Admin', 'Viewer']
+  const names    = ['Alice Johnson', 'Bob Martinez', 'Carol White', 'David Park', 'Eva Chen', 'Frank Lee']
+  const roles    = ['Admin', 'Editor', 'Viewer', 'Editor', 'Admin', 'Viewer']
   const statuses = ['active', 'inactive', 'pending', 'active', 'active', 'inactive']
   return {
     id:     i + 1,
@@ -305,22 +281,6 @@ const COMPLEX_ROWS = [
    =================================================================== */
 
 export default function App() {
-  /* --- Button state --- */
-  const [btnPressed, setBtnPressed] = useState(false)
-  const [btnLoading, setBtnLoading] = useState(false)
-
-  /* --- Input state --- */
-  const [inputVal, setInputVal]   = useState('')
-  const [inputPwd, setInputPwd]   = useState('')
-  const [inputPwdReveal, setInputPwdReveal] = useState('')
-
-  /* --- Select state --- */
-  const [selectSingle, setSelectSingle] = useState('')
-  const [selectMulti,  setSelectMulti]  = useState<string[]>([])
-
-  /* --- SearchInput state --- */
-  const [search, setSearch] = useState('')
-
   /* --- Chip state --- */
   const [chipSelected, setChipSelected] = useState<string[]>(['react'])
 
@@ -456,71 +416,15 @@ export default function App() {
             <TypographySection />
             <SpacingSection />
 
-            {/* Button */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="button" title="Button" />
+            {/* ═══════════════════════════════════════════════════════
+                ACTIONS
+                ═══════════════════════════════════════════════════════ */}
 
-              <SectionLabel>Variants</SectionLabel>
-              <Row>
-                <Button variant="primary">Primary</Button>
-                <Button variant="secondary">Secondary</Button>
-                <Button variant="tertiary">Tertiary</Button>
-                <Button variant="text-link">Text link</Button>
-              </Row>
+            <ButtonSection />
 
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Sizes</SectionLabel>
-                <Row>
-                  <Button variant="primary" size="lg">Large</Button>
-                  <Button variant="primary" size="md">Medium</Button>
-                  <Button variant="primary" size="sm">Small</Button>
-                </Row>
-              </div>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Icons</SectionLabel>
-                <Row>
-                  <Button variant="primary" iconLeft={Plus}>Add item</Button>
-                  <Button variant="secondary" iconRight={Download}>Export</Button>
-                  <Button variant="tertiary" iconLeft={Edit3}>Edit</Button>
-                  <Button variant="primary" aria-label="Delete" iconLeft={Trash2} />
-                </Row>
-              </div>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>States</SectionLabel>
-                <Row>
-                  <Button
-                    variant="primary"
-                    loading={btnLoading}
-                    onClick={() => { setBtnLoading(true); setTimeout(() => setBtnLoading(false), 2000) }}
-                  >
-                    {btnLoading ? 'Loading…' : 'Click to load'}
-                  </Button>
-                  <Button variant="secondary" pressed={btnPressed} onClick={() => setBtnPressed(p => !p)}>
-                    {btnPressed ? 'Pressed' : 'Toggle'}
-                  </Button>
-                  <Button variant="primary" disabled>Disabled</Button>
-                  <Button variant="primary" error>Error</Button>
-                </Row>
-              </div>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Glass (secondary + glass prop)</SectionLabel>
-                <div
-                  style={{
-                    background: 'linear-gradient(135deg, #1a6b3a 0%, #26890d 50%, #4caf50 100%)',
-                    borderRadius: 12,
-                    padding: 24,
-                    display: 'flex',
-                    gap: 12,
-                  }}
-                >
-                  <Button variant="secondary" glass>Glass button</Button>
-                  <Button variant="secondary" glass iconLeft={Plus}>Add item</Button>
-                </div>
-              </div>
-            </section>
+            {/* ═══════════════════════════════════════════════════════
+                DATA DISPLAY (inline — not yet extracted)
+                ═══════════════════════════════════════════════════════ */}
 
             {/* Badge */}
             <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
@@ -617,132 +521,17 @@ export default function App() {
             </section>
 
             {/* ═══════════════════════════════════════════════════════
-                INPUTS & SELECTION
+                FORMS & INPUTS
                 ═══════════════════════════════════════════════════════ */}
 
-            {/* Input */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="input" title="Input" />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)', maxWidth: 360 }}>
-                <Input
-                  label="Email"
-                  type="email"
-                  placeholder="you@example.com"
-                  iconLeft={Mail}
-                  value={inputVal}
-                  onChange={e => setInputVal(e.target.value)}
-                  helperText="We'll never share your email."
-                />
-                <Input
-                  label="Password"
-                  type="password"
-                  iconLeft={Lock}
-                  value={inputPwd}
-                  onChange={e => setInputPwd(e.target.value)}
-                />
-                <Input
-                  label="Error state"
-                  value="invalid@"
-                  onChange={() => {}}
-                  error
-                  errorMessage="Enter a valid email address."
-                />
-                <Input
-                  label="Disabled"
-                  value="Readonly value"
-                  onChange={() => {}}
-                  disabled
-                />
-
-                {/* Password reveal */}
-                <Input
-                  label="Password"
-                  type="password"
-                  iconLeft={Lock}
-                  revealable
-                  value={inputPwdReveal}
-                  onChange={e => setInputPwdReveal(e.target.value)}
-                  helperText="Min. 8 characters, one uppercase, one number."
-                />
-              </div>
-            </section>
-
-            {/* Select */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="select" title="Select" />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)', maxWidth: 360 }}>
-                <Select
-                  label="Single select"
-                  options={FRUIT_OPTIONS}
-                  value={selectSingle}
-                  onChange={v => setSelectSingle(v as string)}
-                />
-                <Select
-                  label="Multi select"
-                  options={FRUIT_OPTIONS}
-                  value={selectMulti}
-                  onChange={v => setSelectMulti(v as string[])}
-                  multiple
-                  searchable
-                  helperText="Choose all that apply."
-                />
-                <Select
-                  label="Error state"
-                  options={FRUIT_OPTIONS}
-                  value=""
-                  onChange={() => {}}
-                  error
-                  errorMessage="Please select an option."
-                />
-                <Select
-                  label="Disabled"
-                  options={FRUIT_OPTIONS}
-                  value="apple"
-                  onChange={() => {}}
-                  disabled
-                />
-              </div>
-            </section>
-
-            {/* Switch */}
+            <InputSection />
+            <SelectSection />
             <SwitchSection />
-
-            {/* ToggleGroup */}
             <ToggleGroupSection />
-
-            {/* SearchInput */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="searchinput" title="SearchInput" />
-
-              <SectionLabel>Grows right</SectionLabel>
-              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <SearchInput
-                  aria-label="Search"
-                  value={search}
-                  onValueChange={setSearch}
-                  expandDirection="right"
-                  placeholder="Search…"
-                />
-              </div>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Grows left</SectionLabel>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <SearchInput
-                    aria-label="Search right-anchored"
-                    value={search}
-                    onValueChange={setSearch}
-                    expandDirection="left"
-                    placeholder="Search…"
-                  />
-                </div>
-              </div>
-            </section>
+            <SearchInputSection />
 
             {/* ═══════════════════════════════════════════════════════
-                DATA DISPLAY
+                DATA DISPLAY (continued)
                 ═══════════════════════════════════════════════════════ */}
 
             {/* Card */}
@@ -881,14 +670,11 @@ export default function App() {
                 <SectionLabel>B — Grouped headers / parent columns</SectionLabel>
                 <Table>
                   <TableHeader>
-                    {/* Row 1: group headers */}
                     <TableHeaderRow>
-                      {/* "Region" spans both header rows */}
                       <TableHeaderCell rowSpan={2}>Region</TableHeaderCell>
                       <TableHeaderGroup colSpan={2} align="center">Forecast</TableHeaderGroup>
                       <TableHeaderGroup colSpan={2} align="center">Performance</TableHeaderGroup>
                     </TableHeaderRow>
-                    {/* Row 2: individual column headers under each group */}
                     <TableHeaderRow>
                       <TableHeaderCell>Revenue</TableHeaderCell>
                       <TableHeaderCell>Margin</TableHeaderCell>
@@ -909,10 +695,7 @@ export default function App() {
                         <TableCell
                           primary={row.variance}
                           trailing={
-                            <Badge
-                              tone={row.trend}
-                              size="sm"
-                            >
+                            <Badge tone={row.trend} size="sm">
                               {row.trend}
                             </Badge>
                           }
@@ -937,11 +720,7 @@ export default function App() {
                   </TableHeader>
                   <TableBody>
                     {COMPLEX_ROWS.map(row => (
-                      <TableRow
-                        key={row.id}
-                        selected={row.id === 3}
-                      >
-                        {/* User: avatar + name + email */}
+                      <TableRow key={row.id} selected={row.id === 3}>
                         <TableCell
                           leading={
                             <Tooltip content={row.name}>
@@ -951,12 +730,7 @@ export default function App() {
                           primary={row.name}
                           secondary={row.email}
                         />
-                        {/* Department: primary + team sub-label */}
-                        <TableCell
-                          primary={row.dept}
-                          secondary={row.team}
-                        />
-                        {/* Status: badge */}
+                        <TableCell primary={row.dept} secondary={row.team} />
                         <TableCell
                           trailing={
                             <Badge
@@ -971,7 +745,6 @@ export default function App() {
                             </Badge>
                           }
                         />
-                        {/* Score: value + tier chip */}
                         <TableCell align="right">
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
                             <span className="body-body1-regular">{row.score}</span>
@@ -1116,7 +889,6 @@ export default function App() {
                 <Button variant="secondary" size="sm" onClick={() => setLoadingOpen(true)}>loading</Button>
               </Row>
 
-              {/* Alert */}
               <AlertModal
                 open={alertOpen}
                 onOpenChange={setAlertOpen}
@@ -1131,7 +903,6 @@ export default function App() {
                 }
               />
 
-              {/* Success */}
               <AlertModal
                 open={successOpen}
                 onOpenChange={setSuccessOpen}
@@ -1143,7 +914,6 @@ export default function App() {
                 }
               />
 
-              {/* Loading — non-dismissible (Esc + overlay click blocked) */}
               <AlertModal
                 open={loadingOpen}
                 onOpenChange={setLoadingOpen}
@@ -1151,7 +921,6 @@ export default function App() {
                 headline="Generating your report…"
                 description="This may take a few seconds. Please don't close this window."
                 footer={
-                  /* Showcase-only escape hatch — production would close programmatically */
                   <Button variant="tertiary" size="sm" onClick={() => setLoadingOpen(false)}>
                     Simulate complete
                   </Button>
@@ -1170,7 +939,6 @@ export default function App() {
                 <Button variant="secondary" size="sm" onClick={() => setFsaLoadingOpen(true)}>loading</Button>
               </Row>
 
-              {/* Alert */}
               <FullScreenAlert
                 open={fsaAlertOpen}
                 onOpenChange={setFsaAlertOpen}
@@ -1185,7 +953,6 @@ export default function App() {
                 }
               />
 
-              {/* Success */}
               <FullScreenAlert
                 open={fsaSuccessOpen}
                 onOpenChange={setFsaSuccessOpen}
@@ -1197,7 +964,6 @@ export default function App() {
                 }
               />
 
-              {/* Loading — non-dismissible; footer provides showcase escape hatch */}
               <FullScreenAlert
                 open={fsaLoadingOpen}
                 onOpenChange={setFsaLoadingOpen}
@@ -1205,7 +971,6 @@ export default function App() {
                 title="Generating your report…"
                 description="This may take a few seconds. Please don't close this window."
                 footer={
-                  /* Showcase-only escape hatch — production would close programmatically */
                   <Button variant="tertiary" size="sm" onClick={() => setFsaLoadingOpen(false)}>
                     Simulate complete
                   </Button>
@@ -1225,7 +990,6 @@ export default function App() {
                 <Button variant="secondary" size="sm" onClick={() => setModalXlOpen(true)}>xl — Long content</Button>
               </Row>
 
-              {/* sm — simple confirmation-style content */}
               <Modal
                 open={modalSmOpen}
                 onOpenChange={setModalSmOpen}
@@ -1243,7 +1007,6 @@ export default function App() {
                 </p>
               </Modal>
 
-              {/* md — form content */}
               <Modal
                 open={modalMdOpen}
                 onOpenChange={setModalMdOpen}
@@ -1264,7 +1027,6 @@ export default function App() {
                 </div>
               </Modal>
 
-              {/* lg — table inside a modal */}
               <Modal
                 open={modalLgOpen}
                 onOpenChange={setModalLgOpen}
@@ -1308,7 +1070,6 @@ export default function App() {
                 </Table>
               </Modal>
 
-              {/* xl — long content to demonstrate sticky header + footer + internal scroll */}
               <Modal
                 open={modalXlOpen}
                 onOpenChange={setModalXlOpen}
@@ -1321,7 +1082,6 @@ export default function App() {
                   </>
                 }
               >
-                {/* Large table to force internal scroll */}
                 <Table>
                   <TableHeader>
                     <TableHeaderRow>
@@ -1371,7 +1131,6 @@ export default function App() {
                 <Button variant="secondary" size="sm" onClick={() => setDrawerLgOpen(true)}>lg — Long content</Button>
               </Row>
 
-              {/* sm — quick edit form */}
               <Drawer
                 open={drawerSmOpen}
                 onOpenChange={setDrawerSmOpen}
@@ -1391,7 +1150,6 @@ export default function App() {
                 </div>
               </Drawer>
 
-              {/* md — filter/settings panel */}
               <Drawer
                 open={drawerMdOpen}
                 onOpenChange={setDrawerMdOpen}
@@ -1430,7 +1188,6 @@ export default function App() {
                 </div>
               </Drawer>
 
-              {/* lg — long content to validate sticky header + footer + internal scroll */}
               <Drawer
                 open={drawerLgOpen}
                 onOpenChange={setDrawerLgOpen}
@@ -1481,47 +1238,39 @@ export default function App() {
             <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
               <ComponentHeader id="tabs" title="Tabs" />
 
-              {/* md — label only */}
               <SectionLabel>Medium — label only</SectionLabel>
               <Tabs items={TAB_LABEL_ONLY} value={tabMd1} onValueChange={setTabMd1} />
 
-              {/* md — icon + label */}
               <div style={{ marginTop: 32 }}>
                 <SectionLabel>Medium — icon + label</SectionLabel>
                 <Tabs items={TAB_ICON_LABEL} value={tabMd2} onValueChange={setTabMd2} />
               </div>
 
-              {/* md — icon + label + CountBadge */}
               <div style={{ marginTop: 32 }}>
                 <SectionLabel>Medium — icon + label + CountBadge</SectionLabel>
                 <Tabs items={TAB_ICON_COUNT} value={tabMd3} onValueChange={setTabMd3} />
               </div>
 
-              {/* md — with disabled tab */}
               <div style={{ marginTop: 32 }}>
                 <SectionLabel>Medium — with disabled tab</SectionLabel>
                 <Tabs items={TAB_WITH_DISABLED} value={tabMd4} onValueChange={setTabMd4} />
               </div>
 
-              {/* sm — label only */}
               <div style={{ marginTop: 40 }}>
                 <SectionLabel>Small — label only</SectionLabel>
                 <Tabs items={TAB_LABEL_ONLY} value={tabSm1} onValueChange={setTabSm1} size="sm" />
               </div>
 
-              {/* sm — icon + label */}
               <div style={{ marginTop: 32 }}>
                 <SectionLabel>Small — icon + label</SectionLabel>
                 <Tabs items={TAB_ICON_LABEL} value={tabSm2} onValueChange={setTabSm2} size="sm" />
               </div>
 
-              {/* sm — icon + CountBadge */}
               <div style={{ marginTop: 32 }}>
                 <SectionLabel>Small — icon + CountBadge</SectionLabel>
                 <Tabs items={TAB_ICON_COUNT} value={tabSm3} onValueChange={setTabSm3} size="sm" />
               </div>
 
-              {/* sm — with disabled tab */}
               <div style={{ marginTop: 32 }}>
                 <SectionLabel>Small — with disabled tab</SectionLabel>
                 <Tabs items={TAB_WITH_DISABLED} value={tabSm4} onValueChange={setTabSm4} size="sm" />
@@ -1532,11 +1281,6 @@ export default function App() {
             <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
               <ComponentHeader id="header" title="Header" />
               <SectionLabel>Full component — logo · product name · divider · Bell · Avatar · Account dropdown</SectionLabel>
-              {/*
-                CSS transform creates a new containing block for position:fixed
-                descendants (CSS spec §9.6.2), so the Header renders inside this
-                frame instead of escaping to the viewport.
-              */}
               <PreviewFrame height={64} contained>
                 <Header productName="Converge Platform" />
               </PreviewFrame>
@@ -1551,7 +1295,6 @@ export default function App() {
               <SectionLabel>Toggle affordance built in — collapse/expand from within the component</SectionLabel>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-l)' }}>
-                {/* Light theme */}
                 <div>
                   <p style={{ fontSize: 12, color: 'var(--muted-foreground)', marginBottom: 8, marginTop: 0 }}>
                     Light — {sbLightCollapsed ? 'collapsed' : 'expanded'}
@@ -1568,7 +1311,6 @@ export default function App() {
                   </PreviewFrame>
                 </div>
 
-                {/* Dark theme */}
                 <div>
                   <p style={{ fontSize: 12, color: 'var(--muted-foreground)', marginBottom: 8, marginTop: 0 }}>
                     Dark — {sbDarkCollapsed ? 'collapsed' : 'expanded'}
