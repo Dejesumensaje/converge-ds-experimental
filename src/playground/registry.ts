@@ -8,6 +8,10 @@ import { SelectSection } from './sections/SelectSection'
 import { SwitchSection } from './sections/SwitchSection'
 import { ToggleGroupSection } from './sections/ToggleGroupSection'
 import { SearchInputSection } from './sections/SearchInputSection'
+import { TableSection } from './sections/TableSection'
+import { CardSection } from './sections/CardSection'
+import { MetricCardSection } from './sections/MetricCardSection'
+import { InformativeCardSection } from './sections/InformativeCardSection'
 
 export type SectionEntry = {
   group: string
@@ -17,13 +21,17 @@ export type SectionEntry = {
 }
 
 export const SECTION_REGISTRY: SectionEntry[] = [
-  { group: 'foundations', id: 'colors',      label: 'Colors',      Component: ColorsSection },
-  { group: 'foundations', id: 'typography',  label: 'Typography',  Component: TypographySection },
-  { group: 'foundations', id: 'spacing',     label: 'Spacing',     Component: SpacingSection },
-  { group: 'actions',     id: 'button',      label: 'Button',      Component: ButtonSection },
-  { group: 'forms',       id: 'input',       label: 'Input',       Component: InputSection },
-  { group: 'forms',       id: 'select',      label: 'Select',      Component: SelectSection },
-  { group: 'forms',       id: 'switch',      label: 'Switch',      Component: SwitchSection },
-  { group: 'forms',       id: 'togglegroup', label: 'ToggleGroup', Component: ToggleGroupSection },
-  { group: 'forms',       id: 'searchinput', label: 'SearchInput', Component: SearchInputSection },
+  { group: 'foundations',  id: 'colors',          label: 'Colors',          Component: ColorsSection },
+  { group: 'foundations',  id: 'typography',       label: 'Typography',      Component: TypographySection },
+  { group: 'foundations',  id: 'spacing',          label: 'Spacing',         Component: SpacingSection },
+  { group: 'actions',      id: 'button',           label: 'Button',          Component: ButtonSection },
+  { group: 'forms',        id: 'input',            label: 'Input',           Component: InputSection },
+  { group: 'forms',        id: 'select',           label: 'Select',          Component: SelectSection },
+  { group: 'forms',        id: 'switch',           label: 'Switch',          Component: SwitchSection },
+  { group: 'forms',        id: 'togglegroup',      label: 'ToggleGroup',     Component: ToggleGroupSection },
+  { group: 'forms',        id: 'searchinput',      label: 'SearchInput',     Component: SearchInputSection },
+  { group: 'data-display', id: 'table',            label: 'Table',           Component: TableSection },
+  { group: 'data-display', id: 'card',             label: 'Card',            Component: CardSection },
+  { group: 'data-display', id: 'metriccard',       label: 'MetricCard',      Component: MetricCardSection },
+  { group: 'data-display', id: 'informativecard',  label: 'InformativeCard', Component: InformativeCardSection },
 ]

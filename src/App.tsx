@@ -11,10 +11,7 @@ import {
   Chip,
   Input,
   Switch,
-  Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
-  MetricCard,
-  InformativeCard,
-  Table, TableHeader, TableHeaderRow, TableHeaderCell, TableHeaderGroup,
+  Table, TableHeader, TableHeaderRow, TableHeaderCell,
   TableBody, TableRow, TableCell,
   Avatar,
   Tabs,
@@ -50,6 +47,10 @@ import { SelectSection } from './playground/sections/SelectSection'
 import { SwitchSection } from './playground/sections/SwitchSection'
 import { ToggleGroupSection } from './playground/sections/ToggleGroupSection'
 import { SearchInputSection } from './playground/sections/SearchInputSection'
+import { TableSection } from './playground/sections/TableSection'
+import { CardSection } from './playground/sections/CardSection'
+import { MetricCardSection } from './playground/sections/MetricCardSection'
+import { InformativeCardSection } from './playground/sections/InformativeCardSection'
 
 /* ===================================================================
    Nav data
@@ -262,19 +263,6 @@ const TABLE_ROWS = [
   { id: 4, name: 'David Park',     role: 'Editor',  status: 'pending',  score: 61 },
 ]
 
-const FORECAST_ROWS = [
-  { id: 1, name: 'North Region', revenue: '$125K', margin: '24%', growth: '+18%', variance: '+$4.2K',  trend: 'success'  as const },
-  { id: 2, name: 'South Region', revenue: '$98K',  margin: '19%', growth: '+7%',  variance: '-$1.1K',  trend: 'negative' as const },
-  { id: 3, name: 'East Region',  revenue: '$143K', margin: '31%', growth: '+26%', variance: '+$8.7K',  trend: 'success'  as const },
-  { id: 4, name: 'West Region',  revenue: '$77K',  margin: '15%', growth: '-2%',  variance: '-$3.0K',  trend: 'warning'  as const },
-]
-
-const COMPLEX_ROWS = [
-  { id: 1, name: 'Alice Johnson', email: 'alice@company.com',  dept: 'Engineering', team: 'Platform',  status: 'active',   score: 98, tier: 'Elite',    avatar: 'https://i.pravatar.cc/150?img=1' },
-  { id: 2, name: 'Bob Martinez',  email: 'bob@company.com',    dept: 'Design',      team: 'Product',   status: 'pending',  score: 74, tier: 'Standard', avatar: 'https://i.pravatar.cc/150?img=2' },
-  { id: 3, name: 'Carol White',   email: 'carol@company.com',  dept: 'Analytics',   team: 'Data',      status: 'active',   score: 91, tier: 'Elite',    avatar: 'https://i.pravatar.cc/150?img=3' },
-  { id: 4, name: 'David Park',    email: 'david@company.com',  dept: 'Engineering', team: 'Mobile',    status: 'inactive', score: 62, tier: 'Standard', avatar: 'https://i.pravatar.cc/150?img=4' },
-]
 
 /* ===================================================================
    App
@@ -322,17 +310,6 @@ export default function App() {
   const [modalMdOpen, setModalMdOpen] = useState(false)
   const [modalLgOpen, setModalLgOpen] = useState(false)
   const [modalXlOpen, setModalXlOpen] = useState(false)
-
-  /* --- Table sort state --- */
-  const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
-
-  const toggleSort = () =>
-    setSortDir(d => d === null ? 'asc' : d === 'asc' ? 'desc' : null)
-
-  const sortedRows = [...TABLE_ROWS].sort((a, b) => {
-    if (!sortDir) return 0
-    return sortDir === 'asc' ? a.score - b.score : b.score - a.score
-  })
 
   const chipToggle = (val: string) =>
     setChipSelected(prev =>
@@ -425,7 +402,7 @@ export default function App() {
             <ButtonSection />
 
             {/* ═══════════════════════════════════════════════════════
-                DATA DISPLAY (inline — not yet extracted)
+                DATA DISPLAY (inline — Badge · Dot · CountBadge · Chip)
                 ═══════════════════════════════════════════════════════ */}
 
             {/* Badge */}
@@ -536,290 +513,10 @@ export default function App() {
                 DATA DISPLAY (continued)
                 ═══════════════════════════════════════════════════════ */}
 
-            {/* Card */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="card" title="Card" />
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--spacing-l)' }}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Analytics overview</CardTitle>
-                    <CardDescription>Performance for the last 30 days.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p style={{ margin: 0, color: 'var(--muted-foreground)', fontSize: 14 }}>
-                      Total sessions increased by 12% compared to the previous period.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="secondary" size="sm">View report</Button>
-                  </CardFooter>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Team members</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <Avatar fallback="AL" src="https://i.pravatar.cc/150?img=1" />
-                      <Avatar fallback="BM" src="https://i.pravatar.cc/150?img=2" />
-                      <Avatar fallback="CW" src="https://i.pravatar.cc/150?img=3" />
-                      <Avatar fallback="+3" />
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="tertiary" size="sm" iconLeft={Plus}>Invite</Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </section>
-
-            {/* MetricCard */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="metriccard" title="MetricCard" />
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--spacing-l)' }}>
-                <MetricCard
-                  title="Total Revenue"
-                  primaryValue="$128,400"
-                  secondaryValue="vs $112K prev"
-                  trendValue={<TrendingUp size={14} aria-hidden />}
-                  trendLabel="+14.6%"
-                  statusNode={<Badge tone="success" size="sm">On track</Badge>}
-                />
-                <MetricCard
-                  title="Active Users"
-                  primaryValue="4,823"
-                  secondaryValue="Daily active"
-                  trendLabel="+2.3%"
-                />
-                <MetricCard
-                  title="Avg. Order Value"
-                  primaryValue="$42.80"
-                  trendLabel="-1.2%"
-                  statusNode={<Badge tone="warning" size="sm">Watch</Badge>}
-                />
-              </div>
-            </section>
-
-            {/* InformativeCard */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="informativecard" title="InformativeCard" />
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--spacing-l)' }}>
-                <InformativeCard
-                  category="Guide"
-                  title="Getting started with Converge"
-                  subtitle="Learn the basics in 5 minutes"
-                  tags={[<Badge key="new" tone="in-progress" size="sm">New</Badge>]}
-                  actions={<Button variant="primary" size="sm">Start guide</Button>}
-                />
-                <InformativeCard
-                  imageSrc="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=200&fit=crop"
-                  category="Tutorial"
-                  title="Advanced reporting features"
-                  subtitle="Build custom dashboards and share insights"
-                  actions={<Button variant="secondary" size="sm">Read more</Button>}
-                />
-              </div>
-            </section>
-
-            {/* Table */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="table" title="Table" />
-
-              {/* A. Basic table with sort */}
-              <SectionLabel>A — Basic + sortable column</SectionLabel>
-              <Table>
-                <TableHeader>
-                  <TableHeaderRow>
-                    <TableHeaderCell>Name</TableHeaderCell>
-                    <TableHeaderCell>Role</TableHeaderCell>
-                    <TableHeaderCell>Status</TableHeaderCell>
-                    <TableHeaderCell align="right" sortable sortDirection={sortDir} onSort={toggleSort}>
-                      Score
-                    </TableHeaderCell>
-                  </TableHeaderRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedRows.map(row => (
-                    <TableRow key={row.id}>
-                      <TableCell primary={row.name} secondary={`#${row.id}`} />
-                      <TableCell primary={row.role} />
-                      <TableCell
-                        trailing={
-                          <Badge
-                            tone={
-                              row.status === 'active'   ? 'success'
-                              : row.status === 'inactive' ? 'negative'
-                              : 'warning'
-                            }
-                            size="sm"
-                          >
-                            {row.status}
-                          </Badge>
-                        }
-                      />
-                      <TableCell primary={String(row.score)} align="right" />
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {/* B. Grouped headers — parent columns */}
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>B — Grouped headers / parent columns</SectionLabel>
-                <Table>
-                  <TableHeader>
-                    <TableHeaderRow>
-                      <TableHeaderCell rowSpan={2}>Region</TableHeaderCell>
-                      <TableHeaderGroup colSpan={2} align="center">Forecast</TableHeaderGroup>
-                      <TableHeaderGroup colSpan={2} align="center">Performance</TableHeaderGroup>
-                    </TableHeaderRow>
-                    <TableHeaderRow>
-                      <TableHeaderCell>Revenue</TableHeaderCell>
-                      <TableHeaderCell>Margin</TableHeaderCell>
-                      <TableHeaderCell sortable>Growth</TableHeaderCell>
-                      <TableHeaderCell>Variance</TableHeaderCell>
-                    </TableHeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {FORECAST_ROWS.map(row => (
-                      <TableRow key={row.id}>
-                        <TableCell primary={row.name} />
-                        <TableCell primary={row.revenue} />
-                        <TableCell primary={row.margin} />
-                        <TableCell
-                          primary={row.growth}
-                          trailing={<Dot tone={row.trend} size="sm" />}
-                        />
-                        <TableCell
-                          primary={row.variance}
-                          trailing={
-                            <Badge tone={row.trend} size="sm">
-                              {row.trend}
-                            </Badge>
-                          }
-                        />
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* C. Complex cells — enterprise composition */}
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>C — Complex cells (avatar · badge · multi-line)</SectionLabel>
-                <Table>
-                  <TableHeader>
-                    <TableHeaderRow>
-                      <TableHeaderCell>User</TableHeaderCell>
-                      <TableHeaderCell>Department</TableHeaderCell>
-                      <TableHeaderCell>Status</TableHeaderCell>
-                      <TableHeaderCell align="right">Score</TableHeaderCell>
-                    </TableHeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {COMPLEX_ROWS.map(row => (
-                      <TableRow key={row.id} selected={row.id === 3}>
-                        <TableCell
-                          leading={
-                            <Tooltip content={row.name}>
-                              <Avatar src={row.avatar} alt={row.name} fallback={row.name.split(' ').map(n => n[0]).join('')} />
-                            </Tooltip>
-                          }
-                          primary={row.name}
-                          secondary={row.email}
-                        />
-                        <TableCell primary={row.dept} secondary={row.team} />
-                        <TableCell
-                          trailing={
-                            <Badge
-                              tone={
-                                row.status === 'active'   ? 'success'
-                                : row.status === 'inactive' ? 'negative'
-                                : 'warning'
-                              }
-                              size="sm"
-                            >
-                              {row.status}
-                            </Badge>
-                          }
-                        />
-                        <TableCell align="right">
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-                            <span className="body-body1-regular">{row.score}</span>
-                            <Chip size="sm" selected={row.tier === 'Elite'}>{row.tier}</Chip>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* D. Zebra + compact */}
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>D — Zebra + compact density</SectionLabel>
-                <Table variant="zebra" density="compact">
-                  <TableHeader>
-                    <TableHeaderRow>
-                      <TableHeaderCell>Name</TableHeaderCell>
-                      <TableHeaderCell>Role</TableHeaderCell>
-                      <TableHeaderCell align="right">Score</TableHeaderCell>
-                    </TableHeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {TABLE_ROWS.map(row => (
-                      <TableRow key={row.id}>
-                        <TableCell primary={row.name} />
-                        <TableCell primary={row.role} />
-                        <TableCell primary={String(row.score)} align="right" />
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* E. Visual (standout) — pill rows */}
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>E — Visual (standout) — pill rows</SectionLabel>
-                <Table variant="standout">
-                  <TableHeader>
-                    <TableHeaderRow>
-                      <TableHeaderCell>Name</TableHeaderCell>
-                      <TableHeaderCell>Role</TableHeaderCell>
-                      <TableHeaderCell>Status</TableHeaderCell>
-                      <TableHeaderCell align="right">Score</TableHeaderCell>
-                    </TableHeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {TABLE_ROWS.map(row => (
-                      <TableRow key={row.id}>
-                        <TableCell primary={row.name} secondary={`#${row.id}`} />
-                        <TableCell primary={row.role} />
-                        <TableCell
-                          trailing={
-                            <Badge
-                              tone={
-                                row.status === 'active'   ? 'success'
-                                : row.status === 'inactive' ? 'negative'
-                                : 'warning'
-                              }
-                              size="sm"
-                            >
-                              {row.status}
-                            </Badge>
-                          }
-                        />
-                        <TableCell primary={String(row.score)} align="right" />
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </section>
+            <TableSection />
+            <CardSection />
+            <MetricCardSection />
+            <InformativeCardSection />
 
             {/* ═══════════════════════════════════════════════════════
                 FEEDBACK & GUIDANCE
