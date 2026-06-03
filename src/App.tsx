@@ -4,20 +4,8 @@ import React, { useState } from 'react'
 
 // UI components
 import {
-  Button,
-  Badge,
-  Chip,
-  Input,
-  Switch,
-  Table, TableHeader, TableHeaderRow, TableHeaderCell,
-  TableBody, TableRow, TableCell,
-  Avatar,
+  TooltipProvider,
   Tabs,
-  Tooltip, TooltipProvider,
-  Modal,
-  AlertModal,
-  FullScreenAlert,
-  Drawer,
   type TabItem,
 } from './components/ui'
 
@@ -28,7 +16,6 @@ import { Footer } from './components/layout/Footer/Footer'
 
 // Icons
 import {
-  Mail, Plus, Download,
   LayoutDashboard, ShoppingCart, BarChart2, Settings, Users,
   TrendingUp,
 } from 'lucide-react'
@@ -53,6 +40,11 @@ import { CountBadgeSection } from './playground/sections/CountBadgeSection'
 import { DotSection } from './playground/sections/DotSection'
 import { ChipSection } from './playground/sections/ChipSection'
 import { AvatarSection } from './playground/sections/AvatarSection'
+import { TooltipSection } from './playground/sections/TooltipSection'
+import { ModalSection } from './playground/sections/ModalSection'
+import { AlertModalSection } from './playground/sections/AlertModalSection'
+import { FullScreenAlertSection } from './playground/sections/FullScreenAlertSection'
+import { DrawerSection } from './playground/sections/DrawerSection'
 
 /* ===================================================================
    Nav data
@@ -245,26 +237,6 @@ const TAB_WITH_DISABLED: TabItem[] = [
   { id: 'reports',   label: 'Reports',  disabled: true },
 ]
 
-const LONG_ROWS = Array.from({ length: 18 }, (_, i) => {
-  const names    = ['Alice Johnson', 'Bob Martinez', 'Carol White', 'David Park', 'Eva Chen', 'Frank Lee']
-  const roles    = ['Admin', 'Editor', 'Viewer', 'Editor', 'Admin', 'Viewer']
-  const statuses = ['active', 'inactive', 'pending', 'active', 'active', 'inactive']
-  return {
-    id:     i + 1,
-    name:   names[i % names.length],
-    role:   roles[i % roles.length],
-    status: statuses[i % statuses.length],
-    score:  55 + ((i * 13) % 45),
-  }
-})
-
-const TABLE_ROWS = [
-  { id: 1, name: 'Alice Johnson',  role: 'Admin',   status: 'active',   score: 98 },
-  { id: 2, name: 'Bob Martinez',   role: 'Editor',  status: 'inactive', score: 74 },
-  { id: 3, name: 'Carol White',    role: 'Viewer',  status: 'active',   score: 85 },
-  { id: 4, name: 'David Park',     role: 'Editor',  status: 'pending',  score: 61 },
-]
-
 
 /* ===================================================================
    App
@@ -286,29 +258,6 @@ export default function App() {
   const [sbLightActive,    setSbLightActive]    = useState('dashboard')
   const [sbDarkCollapsed,  setSbDarkCollapsed]  = useState(true)
   const [sbDarkActive,     setSbDarkActive]     = useState('analytics')
-
-  /* --- Drawer state --- */
-  const [drawerSmOpen, setDrawerSmOpen] = useState(false)
-  const [drawerMdOpen, setDrawerMdOpen] = useState(false)
-  const [drawerLgOpen, setDrawerLgOpen] = useState(false)
-  const [drawerSwInactive, setDrawerSwInactive] = useState(false)
-  const [drawerSwArchived, setDrawerSwArchived] = useState(false)
-
-  /* --- FullScreenAlert state --- */
-  const [fsaAlertOpen,   setFsaAlertOpen]   = useState(false)
-  const [fsaSuccessOpen, setFsaSuccessOpen] = useState(false)
-  const [fsaLoadingOpen, setFsaLoadingOpen] = useState(false)
-
-  /* --- AlertModal state --- */
-  const [alertOpen,   setAlertOpen]   = useState(false)
-  const [successOpen, setSuccessOpen] = useState(false)
-  const [loadingOpen, setLoadingOpen] = useState(false)
-
-  /* --- Modal state --- */
-  const [modalSmOpen, setModalSmOpen] = useState(false)
-  const [modalMdOpen, setModalMdOpen] = useState(false)
-  const [modalLgOpen, setModalLgOpen] = useState(false)
-  const [modalXlOpen, setModalXlOpen] = useState(false)
 
   const lightSidebarItems = SIDEBAR_NAV_ITEMS.map(item => ({
     ...item,
@@ -424,399 +373,20 @@ export default function App() {
             <InformativeCardSection />
 
             {/* ═══════════════════════════════════════════════════════
-                FEEDBACK & GUIDANCE
+                FEEDBACK & OVERLAYS
                 ═══════════════════════════════════════════════════════ */}
 
-            {/* Tooltip */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="tooltip" title="Tooltip" />
-
-              <SectionLabel>Sides</SectionLabel>
-              <Row>
-                <Tooltip content="Shows on top"    side="top">
-                  <Button variant="secondary" size="sm">Top</Button>
-                </Tooltip>
-                <Tooltip content="Shows on right"  side="right">
-                  <Button variant="secondary" size="sm">Right</Button>
-                </Tooltip>
-                <Tooltip content="Shows on bottom" side="bottom">
-                  <Button variant="secondary" size="sm">Bottom</Button>
-                </Tooltip>
-                <Tooltip content="Shows on left"   side="left">
-                  <Button variant="secondary" size="sm">Left</Button>
-                </Tooltip>
-              </Row>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>On non-button elements</SectionLabel>
-                <Row>
-                  <Tooltip content="User: Alice Johnson">
-                    <Avatar fallback="AJ" src="https://i.pravatar.cc/150?img=5" />
-                  </Tooltip>
-                  <Tooltip content="This badge indicates completed status">
-                    <Badge tone="success">Completed</Badge>
-                  </Tooltip>
-                </Row>
-              </div>
-            </section>
-
+            <TooltipSection />
             <AvatarSection />
-
-            {/* AlertModal */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="alert-modal" title="AlertModal" />
-
-              <SectionLabel>Variants</SectionLabel>
-              <Row>
-                <Button variant="secondary" size="sm" onClick={() => setAlertOpen(true)}>alert</Button>
-                <Button variant="secondary" size="sm" onClick={() => setSuccessOpen(true)}>success</Button>
-                <Button variant="secondary" size="sm" onClick={() => setLoadingOpen(true)}>loading</Button>
-              </Row>
-
-              <AlertModal
-                open={alertOpen}
-                onOpenChange={setAlertOpen}
-                variant="alert"
-                headline="You have unsaved changes"
-                description="Leaving now will discard all edits. This cannot be undone."
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setAlertOpen(false)}>Keep editing</Button>
-                    <Button variant="primary" error onClick={() => setAlertOpen(false)}>Discard changes</Button>
-                  </>
-                }
-              />
-
-              <AlertModal
-                open={successOpen}
-                onOpenChange={setSuccessOpen}
-                variant="success"
-                headline="Report published"
-                description="Your Q1 report is now live and shared with your team."
-                footer={
-                  <Button variant="primary" onClick={() => setSuccessOpen(false)}>Done</Button>
-                }
-              />
-
-              <AlertModal
-                open={loadingOpen}
-                onOpenChange={setLoadingOpen}
-                variant="loading"
-                headline="Generating your report…"
-                description="This may take a few seconds. Please don't close this window."
-                footer={
-                  <Button variant="tertiary" size="sm" onClick={() => setLoadingOpen(false)}>
-                    Simulate complete
-                  </Button>
-                }
-              />
-            </section>
-
-            {/* FullScreenAlert */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="fullscreen-alert" title="FullScreenAlert" />
-
-              <SectionLabel>Variants — full viewport takeover</SectionLabel>
-              <Row>
-                <Button variant="secondary" size="sm" onClick={() => setFsaAlertOpen(true)}>alert</Button>
-                <Button variant="secondary" size="sm" onClick={() => setFsaSuccessOpen(true)}>success</Button>
-                <Button variant="secondary" size="sm" onClick={() => setFsaLoadingOpen(true)}>loading</Button>
-              </Row>
-
-              <FullScreenAlert
-                open={fsaAlertOpen}
-                onOpenChange={setFsaAlertOpen}
-                variant="alert"
-                title="Something went wrong"
-                description="An error occurred while processing your request. Please check your connection and try again."
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setFsaAlertOpen(false)}>Cancel</Button>
-                    <Button variant="primary" onClick={() => setFsaAlertOpen(false)}>Retry</Button>
-                  </>
-                }
-              />
-
-              <FullScreenAlert
-                open={fsaSuccessOpen}
-                onOpenChange={setFsaSuccessOpen}
-                variant="success"
-                title="Report published"
-                description="Your Q1 report is now live and has been shared with your team."
-                footer={
-                  <Button variant="primary" onClick={() => setFsaSuccessOpen(false)}>Done</Button>
-                }
-              />
-
-              <FullScreenAlert
-                open={fsaLoadingOpen}
-                onOpenChange={setFsaLoadingOpen}
-                variant="loading"
-                title="Generating your report…"
-                description="This may take a few seconds. Please don't close this window."
-                footer={
-                  <Button variant="tertiary" size="sm" onClick={() => setFsaLoadingOpen(false)}>
-                    Simulate complete
-                  </Button>
-                }
-              />
-            </section>
-
-            {/* Modal */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="modal" title="Modal" />
-
-              <SectionLabel>Open by size</SectionLabel>
-              <Row>
-                <Button variant="secondary" size="sm" onClick={() => setModalSmOpen(true)}>sm — Simple</Button>
-                <Button variant="secondary" size="sm" onClick={() => setModalMdOpen(true)}>md — Form</Button>
-                <Button variant="secondary" size="sm" onClick={() => setModalLgOpen(true)}>lg — Table</Button>
-                <Button variant="secondary" size="sm" onClick={() => setModalXlOpen(true)}>xl — Long content</Button>
-              </Row>
-
-              <Modal
-                open={modalSmOpen}
-                onOpenChange={setModalSmOpen}
-                title="Archive item"
-                size="sm"
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setModalSmOpen(false)}>Cancel</Button>
-                    <Button variant="primary" onClick={() => setModalSmOpen(false)}>Archive</Button>
-                  </>
-                }
-              >
-                <p style={{ margin: 0, color: 'var(--muted-foreground)', fontSize: 14, lineHeight: 1.6 }}>
-                  This item will be moved to the archive. You can restore it at any time from the Archive section in Settings.
-                </p>
-              </Modal>
-
-              <Modal
-                open={modalMdOpen}
-                onOpenChange={setModalMdOpen}
-                title="Edit profile"
-                size="md"
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setModalMdOpen(false)}>Cancel</Button>
-                    <Button variant="primary" onClick={() => setModalMdOpen(false)}>Save changes</Button>
-                  </>
-                }
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-l)' }}>
-                  <Input label="Full name"   value="Alice Johnson"       onChange={() => {}} />
-                  <Input label="Email"       value="alice@company.com"   onChange={() => {}} type="email" iconLeft={Mail} />
-                  <Input label="Department"  value="Engineering"         onChange={() => {}} />
-                  <Input label="Role"        value="Senior Engineer"     onChange={() => {}} disabled />
-                </div>
-              </Modal>
-
-              <Modal
-                open={modalLgOpen}
-                onOpenChange={setModalLgOpen}
-                title="Team members"
-                size="lg"
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setModalLgOpen(false)}>Close</Button>
-                    <Button variant="primary" iconLeft={Plus} onClick={() => setModalLgOpen(false)}>Add member</Button>
-                  </>
-                }
-              >
-                <Table>
-                  <TableHeader>
-                    <TableHeaderRow>
-                      <TableHeaderCell>Name</TableHeaderCell>
-                      <TableHeaderCell>Role</TableHeaderCell>
-                      <TableHeaderCell>Status</TableHeaderCell>
-                      <TableHeaderCell align="right">Score</TableHeaderCell>
-                    </TableHeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {TABLE_ROWS.map(row => (
-                      <TableRow key={row.id}>
-                        <TableCell primary={row.name} secondary={`#${row.id}`} />
-                        <TableCell primary={row.role} />
-                        <TableCell
-                          trailing={
-                            <Badge
-                              tone={row.status === 'active' ? 'success' : row.status === 'inactive' ? 'negative' : 'warning'}
-                              size="sm"
-                            >
-                              {row.status}
-                            </Badge>
-                          }
-                        />
-                        <TableCell primary={String(row.score)} align="right" />
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Modal>
-
-              <Modal
-                open={modalXlOpen}
-                onOpenChange={setModalXlOpen}
-                title="Q1 Regional Performance — Full Report"
-                size="xl"
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setModalXlOpen(false)}>Dismiss</Button>
-                    <Button variant="primary" iconLeft={Download} onClick={() => setModalXlOpen(false)}>Export PDF</Button>
-                  </>
-                }
-              >
-                <Table>
-                  <TableHeader>
-                    <TableHeaderRow>
-                      <TableHeaderCell>#</TableHeaderCell>
-                      <TableHeaderCell>Name</TableHeaderCell>
-                      <TableHeaderCell>Role</TableHeaderCell>
-                      <TableHeaderCell>Status</TableHeaderCell>
-                      <TableHeaderCell align="right">Score</TableHeaderCell>
-                    </TableHeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {LONG_ROWS.map(row => (
-                      <TableRow key={row.id}>
-                        <TableCell primary={String(row.id)} />
-                        <TableCell primary={row.name} />
-                        <TableCell primary={row.role} />
-                        <TableCell
-                          trailing={
-                            <Badge
-                              tone={row.status === 'active' ? 'success' : row.status === 'inactive' ? 'negative' : 'warning'}
-                              size="sm"
-                            >
-                              {row.status}
-                            </Badge>
-                          }
-                        />
-                        <TableCell primary={String(row.score)} align="right" />
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Modal>
-            </section>
+            <AlertModalSection />
+            <FullScreenAlertSection />
+            <ModalSection />
 
             {/* ═══════════════════════════════════════════════════════
                 NAVIGATION & LAYOUT
                 ═══════════════════════════════════════════════════════ */}
 
-            {/* Drawer */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="drawer" title="Drawer" />
-
-              <SectionLabel>Open by size — right-side contextual workspace</SectionLabel>
-              <Row>
-                <Button variant="secondary" size="sm" onClick={() => setDrawerSmOpen(true)}>sm — Quick edit</Button>
-                <Button variant="secondary" size="sm" onClick={() => setDrawerMdOpen(true)}>md — Filter panel</Button>
-                <Button variant="secondary" size="sm" onClick={() => setDrawerLgOpen(true)}>lg — Long content</Button>
-              </Row>
-
-              <Drawer
-                open={drawerSmOpen}
-                onOpenChange={setDrawerSmOpen}
-                title="Edit member"
-                size="sm"
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setDrawerSmOpen(false)}>Cancel</Button>
-                    <Button variant="primary" onClick={() => setDrawerSmOpen(false)}>Save</Button>
-                  </>
-                }
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-l)' }}>
-                  <Input label="Full name"  value="Alice Johnson"     onChange={() => {}} />
-                  <Input label="Email"      value="alice@company.com" onChange={() => {}} type="email" iconLeft={Mail} />
-                  <Input label="Department" value="Engineering"       onChange={() => {}} />
-                </div>
-              </Drawer>
-
-              <Drawer
-                open={drawerMdOpen}
-                onOpenChange={setDrawerMdOpen}
-                title="Filter results"
-                size="md"
-                footer={
-                  <>
-                    <Button variant="tertiary" onClick={() => setDrawerMdOpen(false)}>Reset</Button>
-                    <Button variant="secondary" onClick={() => setDrawerMdOpen(false)}>Cancel</Button>
-                    <Button variant="primary" onClick={() => setDrawerMdOpen(false)}>Apply filters</Button>
-                  </>
-                }
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12, marginTop: 0 }}>Status</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {(['Active', 'Pending', 'Inactive'] as const).map(s => (
-                        <Chip key={s}>{s}</Chip>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12, marginTop: 0 }}>Role</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {(['Admin', 'Editor', 'Viewer'] as const).map(r => (
-                        <Chip key={r}>{r}</Chip>
-                      ))}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-m)' }}>
-                    <Input label="Search by name" value="" onChange={() => {}} />
-                    <Switch label="Show inactive members" checked={drawerSwInactive} onCheckedChange={setDrawerSwInactive} />
-                    <Switch label="Include archived"      checked={drawerSwArchived} onCheckedChange={setDrawerSwArchived} />
-                  </div>
-                </div>
-              </Drawer>
-
-              <Drawer
-                open={drawerLgOpen}
-                onOpenChange={setDrawerLgOpen}
-                title="Team performance report"
-                size="lg"
-                footer={
-                  <>
-                    <Button variant="secondary" onClick={() => setDrawerLgOpen(false)}>Close</Button>
-                    <Button variant="primary" iconLeft={Download} onClick={() => setDrawerLgOpen(false)}>Export</Button>
-                  </>
-                }
-              >
-                <Table>
-                  <TableHeader>
-                    <TableHeaderRow>
-                      <TableHeaderCell>#</TableHeaderCell>
-                      <TableHeaderCell>Name</TableHeaderCell>
-                      <TableHeaderCell>Role</TableHeaderCell>
-                      <TableHeaderCell>Status</TableHeaderCell>
-                      <TableHeaderCell align="right">Score</TableHeaderCell>
-                    </TableHeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {LONG_ROWS.map(row => (
-                      <TableRow key={row.id}>
-                        <TableCell primary={String(row.id)} />
-                        <TableCell primary={row.name} />
-                        <TableCell primary={row.role} />
-                        <TableCell
-                          trailing={
-                            <Badge
-                              tone={row.status === 'active' ? 'success' : row.status === 'inactive' ? 'negative' : 'warning'}
-                              size="sm"
-                            >
-                              {row.status}
-                            </Badge>
-                          }
-                        />
-                        <TableCell primary={String(row.score)} align="right" />
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Drawer>
-            </section>
+            <DrawerSection />
 
             {/* Tabs */}
             <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
