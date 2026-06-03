@@ -4,6 +4,9 @@
    published library package.
    ================================================================= */
 
+/* Tailwind preflight (CSS reset) — playground only, never published */
+@import "tailwindcss/preflight.css";
+
 @layer base {
   * {
     border-color: var(--border);
