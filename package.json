@@ -1,6 +1,6 @@
 {
   "name": "@dejesumensaje/converge-ds-experimental",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "private": false,
   "type": "module",
   "files": [
@@ -18,7 +18,9 @@
     "./styles.css": "./dist/converge-ds.css",
     "./styles": "./dist/converge-ds.css"
   },
-  "sideEffects": ["./dist/converge-ds.css"],
+  "sideEffects": [
+    "./dist/converge-ds.css"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
