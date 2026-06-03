@@ -5,7 +5,7 @@
    ================================================================= */
 
 /* Tailwind preflight (CSS reset) — playground only, never published */
-@import "tailwindcss/preflight.css";
+@import "tailwindcss/preflight.css" layer(base);
 
 @layer base {
   * {
