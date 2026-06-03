@@ -133,7 +133,7 @@ export const AlertModal = React.forwardRef<HTMLDivElement, AlertModalProps>(
 
           <div className="flex flex-col gap-[var(--spacing-s)]">
             {/* titles-h6 (20px/600) — more contained than h5 (24px) for focused alerts */}
-            <p className="titles-h6 text-foreground">{headline}</p>
+            <h2 className="titles-h6 text-foreground">{headline}</h2>
             {description && (
               <p className="body-body1-regular text-muted-foreground">{description}</p>
             )}
