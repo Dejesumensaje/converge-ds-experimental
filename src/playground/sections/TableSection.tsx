@@ -206,7 +206,7 @@ export function TableSection() {
           }}
         >
           <p className="caption-caption" style={{ margin: '0 0 var(--spacing-m)', color: 'var(--muted-foreground)' }}>
-            Pill rows — sobre superficie tintada
+            Pill rows — on a tinted surface
           </p>
           <Table variant="standout">
             <TableHeader>
