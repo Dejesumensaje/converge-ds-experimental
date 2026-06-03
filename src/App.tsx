@@ -6,8 +6,6 @@ import React, { useState } from 'react'
 import {
   Button,
   Badge,
-  Dot,
-  CountBadge,
   Chip,
   Input,
   Switch,
@@ -33,7 +31,6 @@ import {
   Mail, Plus, Download,
   LayoutDashboard, ShoppingCart, BarChart2, Settings, Users,
   TrendingUp,
-  Star,
 } from 'lucide-react'
 
 // Playground helpers + section modules
@@ -51,6 +48,11 @@ import { TableSection } from './playground/sections/TableSection'
 import { CardSection } from './playground/sections/CardSection'
 import { MetricCardSection } from './playground/sections/MetricCardSection'
 import { InformativeCardSection } from './playground/sections/InformativeCardSection'
+import { BadgeSection } from './playground/sections/BadgeSection'
+import { CountBadgeSection } from './playground/sections/CountBadgeSection'
+import { DotSection } from './playground/sections/DotSection'
+import { ChipSection } from './playground/sections/ChipSection'
+import { AvatarSection } from './playground/sections/AvatarSection'
 
 /* ===================================================================
    Nav data
@@ -269,9 +271,6 @@ const TABLE_ROWS = [
    =================================================================== */
 
 export default function App() {
-  /* --- Chip state --- */
-  const [chipSelected, setChipSelected] = useState<string[]>(['react'])
-
   /* --- Tabs state — each demo is independent --- */
   const [tabMd1, setTabMd1] = useState('overview')
   const [tabMd2, setTabMd2] = useState('forecast')
@@ -310,11 +309,6 @@ export default function App() {
   const [modalMdOpen, setModalMdOpen] = useState(false)
   const [modalLgOpen, setModalLgOpen] = useState(false)
   const [modalXlOpen, setModalXlOpen] = useState(false)
-
-  const chipToggle = (val: string) =>
-    setChipSelected(prev =>
-      prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]
-    )
 
   const lightSidebarItems = SIDEBAR_NAV_ITEMS.map(item => ({
     ...item,
@@ -402,102 +396,13 @@ export default function App() {
             <ButtonSection />
 
             {/* ═══════════════════════════════════════════════════════
-                DATA DISPLAY (inline — Badge · Dot · CountBadge · Chip)
+                DATA DISPLAY (Badge · Dot · CountBadge · Chip)
                 ═══════════════════════════════════════════════════════ */}
 
-            {/* Badge */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="badge" title="Badge" />
-
-              <SectionLabel>Tones</SectionLabel>
-              <Row>
-                <Badge tone="neutral">Neutral</Badge>
-                <Badge tone="success">Success</Badge>
-                <Badge tone="negative">Negative</Badge>
-                <Badge tone="warning">Warning</Badge>
-                <Badge tone="in-progress">In Progress</Badge>
-              </Row>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Sizes</SectionLabel>
-                <Row>
-                  <Badge size="sm">Small</Badge>
-                  <Badge size="md">Medium</Badge>
-                  <Badge size="lg">Large</Badge>
-                </Row>
-              </div>
-            </section>
-
-            {/* Dot */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="dot" title="Dot" />
-
-              <SectionLabel>Tones × Sizes</SectionLabel>
-              <Row>
-                {(['neutral','success','negative','warning','in-progress'] as const).map(tone => (
-                  <div key={tone} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                    {(['sm','md','lg'] as const).map(size => (
-                      <Dot key={size} tone={tone} size={size} />
-                    ))}
-                    <span style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>{tone}</span>
-                  </div>
-                ))}
-              </Row>
-            </section>
-
-            {/* CountBadge */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="countbadge" title="CountBadge" />
-
-              <SectionLabel>Tones</SectionLabel>
-              <Row>
-                <CountBadge count={4}  tone="neutral" />
-                <CountBadge count={12} tone="success" />
-                <CountBadge count={3}  tone="negative" />
-                <CountBadge count={7}  tone="warning" />
-                <CountBadge count={99} tone="in-progress" />
-              </Row>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Trend</SectionLabel>
-                <Row>
-                  <CountBadge count={24} trend="up" />
-                  <CountBadge count={8}  trend="down" />
-                </Row>
-              </div>
-            </section>
-
-            {/* Chip */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="chip" title="Chip" />
-
-              <SectionLabel>Interactive (multi-select)</SectionLabel>
-              <Row>
-                {(['react','vue','angular','svelte'] as const).map(tag => (
-                  <Chip key={tag} selected={chipSelected.includes(tag)} onClick={() => chipToggle(tag)}>
-                    {tag}
-                  </Chip>
-                ))}
-              </Row>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Dismissible</SectionLabel>
-                <Row>
-                  <Chip onClose={() => {}}>React</Chip>
-                  <Chip onClose={() => {}}>TypeScript</Chip>
-                  <Chip onClose={() => {}} icon={Star}>Favorites</Chip>
-                </Row>
-              </div>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Sizes</SectionLabel>
-                <Row>
-                  <Chip size="sm">Small</Chip>
-                  <Chip size="md">Medium</Chip>
-                  <Chip size="lg">Large</Chip>
-                </Row>
-              </div>
-            </section>
+            <BadgeSection />
+            <DotSection />
+            <CountBadgeSection />
+            <ChipSection />
 
             {/* ═══════════════════════════════════════════════════════
                 FORMS & INPUTS
@@ -555,27 +460,7 @@ export default function App() {
               </div>
             </section>
 
-            {/* Avatar */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="avatar" title="Avatar" />
-
-              <SectionLabel>With image</SectionLabel>
-              <Row>
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Avatar key={i} src={`https://i.pravatar.cc/150?img=${i}`} alt={`User ${i}`} fallback={`U${i}`} />
-                ))}
-              </Row>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Fallback (initials)</SectionLabel>
-                <Row>
-                  <Avatar fallback="AL" />
-                  <Avatar fallback="BM" />
-                  <Avatar fallback="CW" />
-                  <Avatar fallback="DP" />
-                </Row>
-              </div>
-            </section>
+            <AvatarSection />
 
             {/* AlertModal */}
             <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
