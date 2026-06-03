@@ -1,4 +1,20 @@
 /* =================================================================
+   BUTTON — self-contained reset (§3.6)
+   In @layer base so Tailwind utilities (e.g. secondary's border)
+   still win in the cascade.
+   ================================================================= */
+
+@layer base {
+  .btn {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    margin: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* =================================================================
    BUTTON — glass effect hover
    Only rules that require !important to override inline styles
    live here. Base glass styles are applied inline in Button.tsx.

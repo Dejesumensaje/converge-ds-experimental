@@ -32,6 +32,11 @@
 }
 
 .toggle-group-option {
+  /* Self-contained reset — §3.6 */
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  box-sizing: border-box;
   position: relative;
   z-index: 2;
   background: transparent;

@@ -213,6 +213,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                 selectWrapperVariants({ size }),
                 getRingClass({ disabled, isError, focused: open, hovered, hasValue }),
                 getBgClass(),
+                'appearance-none border-0 m-0 [font:inherit] box-border',
                 'w-full text-left cursor-pointer',
                 disabled && 'opacity-40 cursor-not-allowed'
               )}
@@ -290,7 +291,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                       value={search}
                       onValueChange={setSearch}
                       placeholder="Search…"
-                      className="flex-1 bg-transparent outline-none body-body2-regular text-foreground placeholder:text-muted-foreground"
+                      className="flex-1 bg-transparent outline-none body-body2-regular text-foreground placeholder:text-muted-foreground appearance-none border-0 m-0"
                     />
                   </div>
                 )}

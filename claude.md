@@ -40,6 +40,26 @@ Implication: components must be production-quality from day one. Treat every com
 - All spacing tokens include `px` units (`--spacing-s: 8px`, not `8`).
 - All border-radius tokens include `px` units.
 
+### 3.1.1 Token usage rules
+
+- COLORS: always a token, never raw hex. Prefer the Tailwind utility mapped via `@theme` (`bg-primary`, `text-muted-foreground`) when it exists; use arbitrary `[var(--token)]` ONLY for tokens not exposed as utilities.
+- SPACING (padding, margin, gap): always a spacing token (`var(--spacing-*)` or the mapped utility). Never raw px for spacing.
+- COMPONENT DIMENSIONS (fixed heights/widths, e.g. a 40px button height, a 16px switch track): raw px is acceptable as a documented component-specific value. These are not part of the spacing scale.
+- BORDER-RADIUS: only radius tokens (see note below). Never raw px radius.
+- TYPOGRAPHY: only the `.titles-*` / `.body-*` / `.button-*` / `.caption-caption` / `.tooltip-tooltip` / `.notification-notification` classes. Never raw font-size/line-height/letter-spacing.
+- Before referencing a token, confirm it exists in `theme.css`. A misspelled `var(--token)` fails silently. If unsure, read theme.css first.
+
+#### Radius token note (theme.css cleanup pending user approval)
+theme.css currently has redundancy/conflict:
+- `--radius-full`, `--radius-button`, `--radius-badge` are ALL 100px (three names, one value).
+- `--radius-xl` is 24px in `:root` but 20px in `@theme inline` — a conflict.
+
+Until the user approves a theme.css cleanup, canonical usage is:
+- Pills (buttons, badges, chips): `--radius-full` (100px). Do NOT use `--radius-button` or `--radius-badge` in new code.
+- Cards/surfaces: `--radius-l` (16px).
+- Inputs/small surfaces: `--radius-m` (8px).
+- Avoid `--radius-xl` until the conflict is resolved.
+
 ### 3.2 Component patterns
 
 - All components use `React.forwardRef` for ref passthrough.
@@ -89,6 +109,16 @@ DO NOT use `--primary` as a generic "active/highlighted" color outside of button
 
 Rationale: brand scarcity enables clean theming (rebrand without touching components), preserves visual hierarchy (brand color stays attention-grabbing because rare), and reduces cognitive load.
 
+### 3.6 Component self-containment (non-negotiable)
+
+Components MUST NOT depend on any global CSS reset (Tailwind preflight, normalize, etc.). The published package ships no global reset; a component that relies on one breaks in a consumer.
+
+Every component owns its reset, scoped to its own root and elements:
+- `box-sizing: border-box` on the component root and any sized children (so `h-[40px]` + padding measures correctly).
+- Native form elements (`button`, `input`, `select`, `textarea`) MUST explicitly set: `appearance: none`, the designed `border` (or `none`), the designed `background`, `font: inherit` (or the designed typography class), and `margin: 0`. Otherwise native browser chrome (default borders/backgrounds) leaks through.
+
+Mental test: "if this rendered in a bare HTML page with no reset, would it still look correct?" If not, it is not self-contained.
+
 ---
 
 ## 4. File Structure
@@ -109,9 +139,12 @@ src/
     utils.ts            ← cn() helper, exported named
   styles/
     theme.css           ← tokens (DO NOT modify without instruction)
-    globals.css         ← imports theme + Tailwind layers
+    globals.css         ← imported by the library; Tailwind layers + scoped utilities
+    playground.css      ← PLAYGROUND ONLY; preflight + demo globals (never imported by index.ts)
+  index.ts              ← LIBRARY entry; everything here ships to npm
   App.tsx               ← playground/showcase for dev
-  main.tsx              ← Vite entry
+  main.tsx              ← Vite entry (playground)
+  vite-env.d.ts         ← Vite env type declarations
 guidelines/             ← for Figma Make consumption
   Guidelines.md
   tokens.md
@@ -124,24 +157,45 @@ tsconfig.json
 
 ---
 
-## 5. Component Build Priority
+## 5. Library vs Playground — Two Build Targets
 
-Build in this exact order. Validate each in `App.tsx` before moving to the next:
+This repo produces two outputs from one codebase. Mixing them breaks consumers.
 
-1. **Button** (4 variants × 3 sizes × glass × full state matrix) — see Section 7 for spec
-2. **Input + Label** (paired)
-3. **Card**
-4. **Badge**
-5. **Select**
-6. **Tabs**
-7. **Dialog / Drawer**
-8. **Table**
+### Entry points
+- `src/index.ts` — LIBRARY entry. Everything it exports (and the CSS it imports) ships to npm.
+- `src/main.tsx` — PLAYGROUND entry. The Vite dev/demo app. Never published.
 
-Do not start a component until the previous one is rendering correctly in the playground.
+### CSS separation (non-negotiable)
+- `src/styles/theme.css` — tokens + scoped typography classes (`.titles-*`, `.body-*`). Published. Zero bare element selectors.
+- `src/styles/globals.css` — imported by the LIBRARY. May import Tailwind `theme.css` + `utilities.css`, token layers, scoped component utilities. MUST NOT contain bare element selectors (`h1`, `body`, `p`, `*`) or Tailwind preflight.
+- `src/styles/playground.css` — imported ONLY by `main.tsx`. May contain Tailwind preflight, bare `h1`/`body` styling, demo globals. NEVER imported by `src/index.ts`.
+
+### The golden rule
+The published package styles ONLY tokens (CSS variables) and scoped classes. It NEVER styles bare HTML elements. A consumer's `<h1>`, `<body>`, `<button>` must remain untouched after importing our CSS.
+
+### Current working mode
+We are COMPLETING the design system, not packaging it. Develop in playground/dev mode (`npm run dev`). Do NOT run the library build, do NOT publish, do NOT touch `vite.config.ts`, `tsconfig.lib.json`, or `package.json` exports/scripts. The library config stays dormant until the dedicated packaging phase.
 
 ---
 
-## 6. Strict Rules — DO NOT
+## 6. Component Inventory
+
+Built and rendering in the playground:
+- Layout: Header, Sidebar, Footer
+- Core: Button, Input, Select, Switch, Tabs, ToggleGroup, Tooltip, Avatar
+- Display: Table (compound), Card, MetricCard, InformativeCard, Badge, CountBadge, Dot, Chip
+- Overlay/feedback: Modal, AlertModal, FullScreenAlert, Drawer
+
+Pending (DS completion phase):
+- Foundations showcases: Color, Typography, Spacing (+ restructured sidebar IA with a real Foundations section)
+- Missing components: Skeleton, MetricCard bar/group; TBD pending user decision: Checkbox, Radio, Popover
+- Per-component docs: subtitle, description, use cases, code snippet (the `guidelines/` folder is currently empty)
+
+Build new components self-contained (Section 3.6) and validate in the playground before moving on.
+
+---
+
+## 7. Strict Rules — DO NOT
 
 - Do NOT regenerate or modify `theme.css` unless the user explicitly asks.
 - Do NOT modify other existing components when working on a new one. If you spot a bug elsewhere, mention it and ask.
@@ -154,31 +208,31 @@ Do not start a component until the previous one is rendering correctly in the pl
 - Do NOT use emoji as icons. Use `lucide-react`.
 - Do NOT center-align long-form text.
 - Do NOT nest Cards more than 1 level deep.
-- Do NOT use border-radius values outside the defined tokens (`--radius-m`, `--radius-l`, `--radius-xl`, `--radius-full`).
+- Do NOT use border-radius values outside the radius token set. Follow the canonical usage in 3.1.1: pills → `--radius-full`, cards/surfaces → `--radius-l`, inputs → `--radius-m`. Avoid `--radius-xl`, `--radius-button`, `--radius-badge`.
 - Do NOT stack more than 2 Dialog/Drawer layers at once.
 
 ---
 
-## 7. Button Specification
+## 8. Button Specification
 
-### 7.1 Variants
+### 8.1 Variants
 - **`primary`**: background `var(--primary)`, text `var(--primary-foreground)`
 - **`secondary`**: outline `var(--border)`, text `var(--foreground)`, transparent background
 - **`tertiary`**: no background, no outline, text `var(--foreground)`
 - **`text-link`**: no background, no outline, no padding, text `var(--foreground)`, uses `body-body1-regular` typography, underline on hover
 
-### 7.2 Sizes
+### 8.2 Sizes
 - `sm`: height 32px, padding `var(--spacing-s)` vertical / `var(--spacing-l)` horizontal, typography `.button-small`, icon 16px
 - `md` (default): height 40px, padding `var(--spacing-m)` / `var(--spacing-xl)`, typography `.button-medium`, icon 20px
 - `lg`: height 48px, padding `var(--spacing-l)` / `var(--spacing-xxl)`, typography `.button-large`, icon 24px
 
-### 7.3 Icon-only buttons
+### 8.3 Icon-only buttons
 Square aspect: 32x32, 40x40, 48x48. Uniform padding. `aria-label` required (TypeScript-enforced).
 
-### 7.4 Border radius
-All variants except `text-link`: `var(--radius-badge)` (100px pill shape). `text-link`: no radius.
+### 8.4 Border radius
+All variants except `text-link`: `var(--radius-full)` (100px pill shape). `text-link`: no radius.
 
-### 7.5 Props
+### 8.5 Props
 ```ts
 type BaseButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'>
   & VariantProps<typeof buttonVariants>
@@ -196,7 +250,7 @@ export type ButtonProps =
   | (BaseButtonProps & { children?: undefined; 'aria-label': string })
 ```
 
-### 7.6 States
+### 8.6 States
 - **Hover (primary)**: background to `var(--success)` (#207F19, darker green)
 - **Hover (secondary no-glass / tertiary)**: background to `var(--muted)`
 - **Hover (text-link)**: underline
@@ -207,7 +261,7 @@ export type ButtonProps =
 - **Error + hover**: `filter: brightness(0.9)` on top of the error state.
 - **Loading**: replace iconLeft (or insert if none) with `Loader2` from lucide-react with `animate-spin`. `pointer-events: none`, `aria-busy="true"`. No color change.
 
-### 7.7 Glass effect (Apple Liquid Glass-inspired)
+### 8.7 Glass effect (Apple Liquid Glass-inspired)
 Only applies when `variant="secondary"` AND `glass={true}`:
 ```css
 background: rgba(255, 255, 255, 0.18);
@@ -223,14 +277,14 @@ On hover: increase top highlight to `rgba(255, 255, 255, 0.55)` and blur to 28px
 
 ---
 
-## 8. When to Ask vs. Execute
+## 9. When to Ask vs. Execute
 
 **ASK before:**
 - Adding new tokens to `theme.css`
 - Changing the variant API of an existing component
 - Adding new dependencies (`npm install ...`)
 - Creating files outside the established structure
-- Anything in the DO NOT list (Section 6)
+- Anything in the DO NOT list (Section 7)
 
 **EXECUTE without asking:**
 - Writing component implementations following the established patterns above
@@ -241,7 +295,7 @@ On hover: increase top highlight to `rgba(255, 255, 255, 0.55)` and blur to 28px
 
 ---
 
-## 9. Validation Checklist (per component)
+## 10. Validation Checklist (per component)
 
 Before marking a component "done":
 - [ ] Renders correctly in `App.tsx` playground for all variants/sizes/states
@@ -252,3 +306,7 @@ Before marking a component "done":
 - [ ] No hardcoded hex colors
 - [ ] Component documented in `guidelines/components.md` with: signature, variants, when to use, do/don't
 - [ ] Exports from `src/components/ui/index.ts`
+- [ ] No bare element selectors in any CSS reaching `src/index.ts` (grep package CSS for `h1`, `h2`, `body`, `p`, `*` → 0 matches)
+- [ ] Self-contained: renders correctly with no global reset (own box-sizing + form resets per 3.6)
+- [ ] No raw px used for spacing (spacing uses tokens)
+- [ ] Radius values come only from the radius token set

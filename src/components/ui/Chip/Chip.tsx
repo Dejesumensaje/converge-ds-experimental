@@ -177,6 +177,7 @@ export const Chip = React.forwardRef<HTMLElement, ChipProps>(
         tabIndex={disabled ? -1 : 0}
         className={cn(
           'flex items-center',
+          'appearance-none border-0 bg-transparent m-0',
           'hover:opacity-70',
           'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm'
         )}

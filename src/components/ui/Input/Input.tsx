@@ -277,6 +277,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onBlur={handleBlur}
             className={cn(
               'w-full h-full bg-transparent outline-none body-body1-regular',
+              'appearance-none border-0 m-0 box-border',
               'text-foreground placeholder-transparent',
               leftPad,
               rightPad,
@@ -300,6 +301,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               onMouseDown={e => e.preventDefault()}
               className={cn(
                 'absolute flex items-center justify-center',
+                'appearance-none border-0 bg-transparent m-0 [font:inherit]',
                 'w-6 h-6 rounded-[var(--radius-m)]',
                 'transition-colors duration-150',
                 'outline-none',

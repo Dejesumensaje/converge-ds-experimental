@@ -180,6 +180,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           disabled={disabled}
           className={cn(
             'inline-flex items-center justify-center flex-shrink-0',
+            'appearance-none border-0 bg-transparent m-0',
             'transition-colors duration-150',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
             'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
@@ -209,6 +210,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           disabled={disabled}
           className={cn(
             'flex-1 min-w-0 bg-transparent border-none outline-none',
+            'appearance-none m-0',
             'input-inputtext text-[var(--foreground)]',
             'placeholder:text-[var(--muted-foreground)]',
             expanded ? 'px-[var(--spacing-s)]' : 'px-0'
@@ -225,6 +227,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
             onClick={handleClear}
             className={cn(
               'flex-shrink-0 inline-flex items-center justify-center rounded-full',
+              'appearance-none border-0 bg-transparent m-0',
               'text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
               'hover:bg-black/5 transition-colors duration-100'
             )}

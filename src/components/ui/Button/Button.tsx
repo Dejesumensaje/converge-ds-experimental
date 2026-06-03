@@ -10,6 +10,7 @@ import './button.css'
 
 const buttonVariants = cva(
   [
+    'btn',
     'inline-flex items-center justify-center gap-2',
     'whitespace-nowrap shrink-0',
     'transition-colors duration-150',

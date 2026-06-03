@@ -11,8 +11,6 @@ import {
   Chip,
   Input,
   Select,
-  Switch,
-  ToggleGroup,
   SearchInput,
   Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
   MetricCard,
@@ -27,7 +25,6 @@ import {
   FullScreenAlert,
   Drawer,
   type SelectOption,
-  type ToggleGroupOption,
   type TabItem,
 } from './components/ui'
 
@@ -41,9 +38,16 @@ import {
   Mail, Lock, Plus, Download, Trash2, Edit3,
   LayoutDashboard, ShoppingCart, BarChart2, Settings, Users,
   TrendingUp,
-  AlignLeft, AlignCenter, AlignRight,
   Star,
 } from 'lucide-react'
+
+// Playground helpers + section modules
+import { ComponentHeader, SectionLabel } from './playground/helpers'
+import { ColorsSection } from './playground/sections/ColorsSection'
+import { TypographySection } from './playground/sections/TypographySection'
+import { SpacingSection } from './playground/sections/SpacingSection'
+import { ToggleGroupSection } from './playground/sections/ToggleGroupSection'
+import { SwitchSection } from './playground/sections/SwitchSection'
 
 /* ===================================================================
    Nav data
@@ -54,16 +58,21 @@ const NAV_SECTIONS = [
     id: 'foundations',
     label: 'Foundations',
     items: [
-      { id: 'button',     label: 'Button' },
-      { id: 'badge',      label: 'Badge' },
-      { id: 'dot',        label: 'Dot' },
-      { id: 'countbadge', label: 'CountBadge' },
-      { id: 'chip',       label: 'Chip' },
+      { id: 'colors',     label: 'Colors' },
+      { id: 'typography', label: 'Typography' },
+      { id: 'spacing',    label: 'Spacing' },
     ],
   },
   {
-    id: 'inputs',
-    label: 'Inputs & Selection',
+    id: 'actions',
+    label: 'Actions',
+    items: [
+      { id: 'button', label: 'Button' },
+    ],
+  },
+  {
+    id: 'forms',
+    label: 'Forms & Inputs',
     items: [
       { id: 'input',       label: 'Input' },
       { id: 'select',      label: 'Select' },
@@ -76,28 +85,32 @@ const NAV_SECTIONS = [
     id: 'data-display',
     label: 'Data Display',
     items: [
+      { id: 'table',           label: 'Table' },
       { id: 'card',            label: 'Card' },
       { id: 'metriccard',      label: 'MetricCard' },
       { id: 'informativecard', label: 'InformativeCard' },
-      { id: 'table',           label: 'Table' },
+      { id: 'badge',           label: 'Badge' },
+      { id: 'countbadge',      label: 'CountBadge' },
+      { id: 'dot',             label: 'Dot' },
+      { id: 'chip',            label: 'Chip' },
+      { id: 'avatar',          label: 'Avatar' },
     ],
   },
   {
     id: 'feedback',
-    label: 'Feedback & Guidance',
+    label: 'Feedback & Overlays',
     items: [
-      { id: 'tooltip', label: 'Tooltip' },
-      { id: 'avatar',  label: 'Avatar' },
-      { id: 'modal',       label: 'Modal' },
-      { id: 'alert-modal',       label: 'AlertModal' },
+      { id: 'tooltip',          label: 'Tooltip' },
+      { id: 'modal',            label: 'Modal' },
+      { id: 'alert-modal',      label: 'AlertModal' },
       { id: 'fullscreen-alert', label: 'FullScreenAlert' },
+      { id: 'drawer',           label: 'Drawer' },
     ],
   },
   {
-    id: 'navigation',
-    label: 'Navigation & Layout',
+    id: 'layout',
+    label: 'Layout',
     items: [
-      { id: 'drawer',  label: 'Drawer' },
       { id: 'tabs',    label: 'Tabs' },
       { id: 'header',  label: 'Header' },
       { id: 'sidebar', label: 'Sidebar' },
@@ -160,49 +173,6 @@ function PlaygroundNav() {
 }
 
 /* ===================================================================
-   ComponentHeader — section anchor heading
-   =================================================================== */
-
-function ComponentHeader({ id, title }: { id: string; title: string }) {
-  return (
-    <h2
-      id={id}
-      style={{
-        scrollMarginTop: 64,
-        fontSize: 20,
-        fontWeight: 700,
-        color: 'var(--foreground)',
-        margin: '0 0 24px',
-        paddingBottom: 12,
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
-      {title}
-    </h2>
-  )
-}
-
-/* ===================================================================
-   SectionLabel — group label within a section
-   =================================================================== */
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{
-      fontSize: 12,
-      fontWeight: 600,
-      color: 'var(--muted-foreground)',
-      marginBottom: 12,
-      marginTop: 0,
-      textTransform: 'uppercase',
-      letterSpacing: '0.06em',
-    }}>
-      {children}
-    </p>
-  )
-}
-
-/* ===================================================================
    PreviewFrame — boxed frame for layout component demos
    =================================================================== */
 
@@ -260,18 +230,6 @@ const FRUIT_OPTIONS: SelectOption[] = [
   { value: 'cherry',     label: 'Cherry' },
   { value: 'durian',     label: 'Durian' },
   { value: 'elderberry', label: 'Elderberry' },
-]
-
-const TOGGLE_ALIGN_OPTIONS: ToggleGroupOption[] = [
-  { value: 'left',   label: 'Left',   icon: AlignLeft },
-  { value: 'center', label: 'Center', icon: AlignCenter },
-  { value: 'right',  label: 'Right',  icon: AlignRight },
-]
-
-const TOGGLE_TEXT_OPTIONS: ToggleGroupOption[] = [
-  { value: 'day',   label: 'Day' },
-  { value: 'week',  label: 'Week' },
-  { value: 'month', label: 'Month' },
 ]
 
 const SIDEBAR_NAV_ITEMS: SidebarItem[] = [
@@ -359,14 +317,6 @@ export default function App() {
   /* --- Select state --- */
   const [selectSingle, setSelectSingle] = useState('')
   const [selectMulti,  setSelectMulti]  = useState<string[]>([])
-
-  /* --- Switch state --- */
-  const [sw1, setSw1] = useState(false)
-  const [sw2, setSw2] = useState(true)
-
-  /* --- ToggleGroup state --- */
-  const [toggleAlign,  setToggleAlign]  = useState('left')
-  const [togglePeriod, setTogglePeriod] = useState('week')
 
   /* --- SearchInput state --- */
   const [search, setSearch] = useState('')
@@ -501,6 +451,10 @@ export default function App() {
             {/* ═══════════════════════════════════════════════════════
                 FOUNDATIONS
                 ═══════════════════════════════════════════════════════ */}
+
+            <ColorsSection />
+            <TypographySection />
+            <SpacingSection />
 
             {/* Button */}
             <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
@@ -753,57 +707,10 @@ export default function App() {
             </section>
 
             {/* Switch */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="switch" title="Switch" />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-l)' }}>
-                <Switch label="Notifications" checked={sw1} onCheckedChange={setSw1} />
-                <Switch label="Auto-save (checked)" checked={sw2} onCheckedChange={setSw2} />
-                <Switch label="Disabled off" checked={false} disabled />
-                <Switch label="Disabled on"  checked={true}  disabled />
-              </div>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Sizes</SectionLabel>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-m)' }}>
-                  <Switch label="Small"           size="sm" checked={sw1} onCheckedChange={setSw1} />
-                  <Switch label="Medium (default)" size="md" checked={sw1} onCheckedChange={setSw1} />
-                </div>
-              </div>
-            </section>
+            <SwitchSection />
 
             {/* ToggleGroup */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="togglegroup" title="ToggleGroup" />
-
-              <SectionLabel>Text options</SectionLabel>
-              <ToggleGroup
-                aria-label="Time period"
-                options={TOGGLE_TEXT_OPTIONS}
-                value={togglePeriod}
-                onValueChange={setTogglePeriod}
-              />
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Icon-only</SectionLabel>
-                <ToggleGroup
-                  aria-label="Text alignment"
-                  options={TOGGLE_ALIGN_OPTIONS}
-                  value={toggleAlign}
-                  onValueChange={setToggleAlign}
-                  iconOnly
-                />
-              </div>
-
-              <div style={{ marginTop: 24 }}>
-                <SectionLabel>Sizes</SectionLabel>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <ToggleGroup aria-label="sm" options={TOGGLE_TEXT_OPTIONS} value="day"  onValueChange={() => {}} size="sm" />
-                  <ToggleGroup aria-label="md" options={TOGGLE_TEXT_OPTIONS} value="week" onValueChange={() => {}} size="md" />
-                  <ToggleGroup aria-label="lg" options={TOGGLE_TEXT_OPTIONS} value="day"  onValueChange={() => {}} size="lg" />
-                </div>
-              </div>
-            </section>
+            <ToggleGroupSection />
 
             {/* SearchInput */}
             <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
