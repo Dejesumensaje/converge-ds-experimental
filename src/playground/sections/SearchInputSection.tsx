@@ -3,7 +3,8 @@ import { SearchInput } from '../../components/ui'
 import { ComponentHeader, SectionLabel } from '../helpers'
 
 export function SearchInputSection() {
-  const [search, setSearch] = React.useState('')
+  const [searchRight, setSearchRight] = React.useState('')
+  const [searchLeft,  setSearchLeft]  = React.useState('')
 
   return (
     <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
@@ -13,8 +14,8 @@ export function SearchInputSection() {
       <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
         <SearchInput
           aria-label="Search"
-          value={search}
-          onValueChange={setSearch}
+          value={searchRight}
+          onValueChange={setSearchRight}
           expandDirection="right"
           placeholder="Search…"
         />
@@ -25,8 +26,8 @@ export function SearchInputSection() {
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <SearchInput
             aria-label="Search right-anchored"
-            value={search}
-            onValueChange={setSearch}
+            value={searchLeft}
+            onValueChange={setSearchLeft}
             expandDirection="left"
             placeholder="Search…"
           />

@@ -304,6 +304,8 @@ export default function App() {
   const [drawerSmOpen, setDrawerSmOpen] = useState(false)
   const [drawerMdOpen, setDrawerMdOpen] = useState(false)
   const [drawerLgOpen, setDrawerLgOpen] = useState(false)
+  const [drawerSwInactive, setDrawerSwInactive] = useState(false)
+  const [drawerSwArchived, setDrawerSwArchived] = useState(false)
 
   /* --- FullScreenAlert state --- */
   const [fsaAlertOpen,   setFsaAlertOpen]   = useState(false)
@@ -1182,8 +1184,8 @@ export default function App() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-m)' }}>
                     <Input label="Search by name" value="" onChange={() => {}} />
-                    <Switch label="Show inactive members" checked={false} onCheckedChange={() => {}} />
-                    <Switch label="Include archived"      checked={false} onCheckedChange={() => {}} />
+                    <Switch label="Show inactive members" checked={drawerSwInactive} onCheckedChange={setDrawerSwInactive} />
+                    <Switch label="Include archived"      checked={drawerSwArchived} onCheckedChange={setDrawerSwArchived} />
                   </div>
                 </div>
               </Drawer>
