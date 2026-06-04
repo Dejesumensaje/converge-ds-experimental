@@ -223,8 +223,9 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
                 'cursor-pointer',
                 // hover: defined in toast.css so reduced-motion can suppress it
                 'hover:opacity-70',
-                // C2: solid ring (no color-mix) + offset for visibility on light tints
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                // C2: solid ring (no color-mix); ring-offset-transparent so the ring
+                // sits directly on the tint surface (white offset near-invisible on light tints)
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0',
                 'focus-visible:ring-[var(--ring)]',
               )}
             >
@@ -307,20 +308,7 @@ export function ToastProvider({ position = 'bottom-right', children }: ToastProv
 
         <RadixToast.Viewport
           className="toast-viewport"
-          style={{
-            position: 'fixed',
-            zIndex: 110,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--spacing-s)',
-            width: '380px',
-            maxWidth: 'calc(100vw - var(--spacing-jumbo))',
-            padding: 0,
-            margin: 0,
-            listStyle: 'none',
-            outline: 'none',
-            ...VIEWPORT_POSITION[position],
-          }}
+          style={VIEWPORT_POSITION[position]}
         />
       </RadixToast.Provider>
     </ToastContext.Provider>
