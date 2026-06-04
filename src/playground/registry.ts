@@ -22,6 +22,10 @@ import { ModalSection } from './sections/ModalSection'
 import { AlertModalSection } from './sections/AlertModalSection'
 import { FullScreenAlertSection } from './sections/FullScreenAlertSection'
 import { DrawerSection } from './sections/DrawerSection'
+import { TabsSection } from './sections/TabsSection'
+import { HeaderSection } from './sections/HeaderSection'
+import { SidebarSection } from './sections/SidebarSection'
+import { FooterSection } from './sections/FooterSection'
 
 export type SectionEntry = {
   group: string
@@ -54,4 +58,8 @@ export const SECTION_REGISTRY: SectionEntry[] = [
   { group: 'feedback',     id: 'alertmodal',        label: 'AlertModal',      Component: AlertModalSection },
   { group: 'feedback',     id: 'fullscreenalert',   label: 'FullScreenAlert', Component: FullScreenAlertSection },
   { group: 'feedback',     id: 'drawer',            label: 'Drawer',          Component: DrawerSection },
+  { group: 'layout',      id: 'tabs',              label: 'Tabs',            Component: TabsSection },
+  { group: 'layout',      id: 'header',            label: 'Header',          Component: HeaderSection },
+  { group: 'layout',      id: 'sidebar',           label: 'Sidebar',         Component: SidebarSection },
+  { group: 'layout',      id: 'footer',            label: 'Footer',          Component: FooterSection },
 ]

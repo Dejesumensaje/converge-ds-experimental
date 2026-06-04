@@ -1,27 +1,13 @@
 import './styles/globals.css'
 import './styles/playground.css'
-import React, { useState } from 'react'
 
 // UI components
-import {
-  TooltipProvider,
-  Tabs,
-  type TabItem,
-} from './components/ui'
+import { TooltipProvider } from './components/ui'
 
-// Layout components
-import { Header } from './components/layout/Header/Header'
-import { Sidebar, type SidebarItem } from './components/layout/Sidebar/Sidebar'
+// Layout components — chrome only (Footer is the page footer)
 import { Footer } from './components/layout/Footer/Footer'
 
-// Icons
-import {
-  LayoutDashboard, ShoppingCart, BarChart2, Settings, Users,
-  TrendingUp,
-} from 'lucide-react'
-
-// Playground helpers + section modules
-import { ComponentHeader, SectionLabel, Row } from './playground/helpers'
+// Section modules
 import { ColorsSection } from './playground/sections/ColorsSection'
 import { TypographySection } from './playground/sections/TypographySection'
 import { SpacingSection } from './playground/sections/SpacingSection'
@@ -45,6 +31,10 @@ import { ModalSection } from './playground/sections/ModalSection'
 import { AlertModalSection } from './playground/sections/AlertModalSection'
 import { FullScreenAlertSection } from './playground/sections/FullScreenAlertSection'
 import { DrawerSection } from './playground/sections/DrawerSection'
+import { TabsSection } from './playground/sections/TabsSection'
+import { HeaderSection } from './playground/sections/HeaderSection'
+import { SidebarSection } from './playground/sections/SidebarSection'
+import { FooterSection } from './playground/sections/FooterSection'
 
 /* ===================================================================
    Nav data
@@ -170,107 +160,10 @@ function PlaygroundNav() {
 }
 
 /* ===================================================================
-   PreviewFrame — boxed frame for layout component demos
-   =================================================================== */
-
-function PreviewFrame({
-  children,
-  height = 340,
-  contained = false,
-}: {
-  children: React.ReactNode
-  height?: number
-  contained?: boolean
-}) {
-  return (
-    <div
-      style={{
-        position: 'relative',
-        height,
-        border: '1px solid var(--border)',
-        borderRadius: 12,
-        overflow: 'hidden',
-        background: 'var(--neutral-gray-background)',
-        ...(contained ? { transform: 'translateZ(0)' } : {}),
-      }}
-    >
-      {children}
-    </div>
-  )
-}
-
-/* ===================================================================
-   Static data — defined outside App to avoid recreation on re-render
-   =================================================================== */
-
-const SIDEBAR_NAV_ITEMS: SidebarItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'orders',    label: 'Orders',    icon: ShoppingCart },
-  { id: 'analytics', label: 'Analytics', icon: BarChart2 },
-  { id: 'users',     label: 'Users',     icon: Users },
-  { id: 'settings',  label: 'Settings',  icon: Settings },
-]
-
-/* Tabs static data */
-const TAB_LABEL_ONLY: TabItem[] = [
-  { id: 'overview',  label: 'Overview' },
-  { id: 'forecast',  label: 'Forecast' },
-  { id: 'analytics', label: 'Analytics' },
-]
-
-const TAB_ICON_LABEL: TabItem[] = [
-  { id: 'overview',  label: 'Overview',  icon: LayoutDashboard },
-  { id: 'forecast',  label: 'Forecast',  icon: BarChart2 },
-  { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-]
-
-const TAB_ICON_COUNT: TabItem[] = [
-  { id: 'overview',  label: 'Overview',  icon: LayoutDashboard },
-  { id: 'forecast',  label: 'Forecast',  icon: BarChart2,  count: 5 },
-  { id: 'analytics', label: 'Analytics', icon: TrendingUp, count: 12, countTone: 'in-progress' },
-]
-
-const TAB_WITH_DISABLED: TabItem[] = [
-  { id: 'overview',  label: 'Overview' },
-  { id: 'forecast',  label: 'Forecast' },
-  { id: 'analytics', label: 'Analytics' },
-  { id: 'reports',   label: 'Reports',  disabled: true },
-]
-
-
-/* ===================================================================
    App
    =================================================================== */
 
 export default function App() {
-  /* --- Tabs state — each demo is independent --- */
-  const [tabMd1, setTabMd1] = useState('overview')
-  const [tabMd2, setTabMd2] = useState('forecast')
-  const [tabMd3, setTabMd3] = useState('analytics')
-  const [tabMd4, setTabMd4] = useState('overview')
-  const [tabSm1, setTabSm1] = useState('overview')
-  const [tabSm2, setTabSm2] = useState('forecast')
-  const [tabSm3, setTabSm3] = useState('analytics')
-  const [tabSm4, setTabSm4] = useState('overview')
-
-  /* --- Sidebar state — each demo is independent --- */
-  const [sbLightCollapsed, setSbLightCollapsed] = useState(false)
-  const [sbLightActive,    setSbLightActive]    = useState('dashboard')
-  const [sbDarkCollapsed,  setSbDarkCollapsed]  = useState(true)
-  const [sbDarkActive,     setSbDarkActive]     = useState('analytics')
-
-  const lightSidebarItems = SIDEBAR_NAV_ITEMS.map(item => ({
-    ...item,
-    active: item.id === sbLightActive,
-    onClick: () => setSbLightActive(item.id),
-  }))
-
-  const darkSidebarItems = SIDEBAR_NAV_ITEMS.map(item => ({
-    ...item,
-    active: item.id === sbDarkActive,
-    onClick: () => setSbDarkActive(item.id),
-  }))
-
   return (
     <TooltipProvider>
 
@@ -387,119 +280,18 @@ export default function App() {
                 ═══════════════════════════════════════════════════════ */}
 
             <DrawerSection />
-
-            {/* Tabs */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="tabs" title="Tabs" />
-
-              <SectionLabel>Medium — label only</SectionLabel>
-              <Tabs items={TAB_LABEL_ONLY} value={tabMd1} onValueChange={setTabMd1} />
-
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>Medium — icon + label</SectionLabel>
-                <Tabs items={TAB_ICON_LABEL} value={tabMd2} onValueChange={setTabMd2} />
-              </div>
-
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>Medium — icon + label + CountBadge</SectionLabel>
-                <Tabs items={TAB_ICON_COUNT} value={tabMd3} onValueChange={setTabMd3} />
-              </div>
-
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>Medium — with disabled tab</SectionLabel>
-                <Tabs items={TAB_WITH_DISABLED} value={tabMd4} onValueChange={setTabMd4} />
-              </div>
-
-              <div style={{ marginTop: 40 }}>
-                <SectionLabel>Small — label only</SectionLabel>
-                <Tabs items={TAB_LABEL_ONLY} value={tabSm1} onValueChange={setTabSm1} size="sm" />
-              </div>
-
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>Small — icon + label</SectionLabel>
-                <Tabs items={TAB_ICON_LABEL} value={tabSm2} onValueChange={setTabSm2} size="sm" />
-              </div>
-
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>Small — icon + CountBadge</SectionLabel>
-                <Tabs items={TAB_ICON_COUNT} value={tabSm3} onValueChange={setTabSm3} size="sm" />
-              </div>
-
-              <div style={{ marginTop: 32 }}>
-                <SectionLabel>Small — with disabled tab</SectionLabel>
-                <Tabs items={TAB_WITH_DISABLED} value={tabSm4} onValueChange={setTabSm4} size="sm" />
-              </div>
-            </section>
-
-            {/* Header */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="header" title="Header" />
-              <SectionLabel>Full component — logo · product name · divider · Bell · Avatar · Account dropdown</SectionLabel>
-              <PreviewFrame height={64} contained>
-                <Header productName="Converge Platform" />
-              </PreviewFrame>
-              <p style={{ marginTop: 8, fontSize: 12, color: 'var(--muted-foreground)' }}>
-                Avatar opens the account dropdown with profile, help center, preferences, and log out.
-              </p>
-            </section>
-
-            {/* Sidebar */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="sidebar" title="Sidebar" />
-              <SectionLabel>Toggle affordance built in — collapse/expand from within the component</SectionLabel>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-l)' }}>
-                <div>
-                  <p style={{ fontSize: 12, color: 'var(--muted-foreground)', marginBottom: 8, marginTop: 0 }}>
-                    Light — {sbLightCollapsed ? 'collapsed' : 'expanded'}
-                  </p>
-                  <PreviewFrame height={360}>
-                    <div style={{ display: 'flex', height: '100%', padding: 12 }}>
-                      <Sidebar
-                        theme="light"
-                        collapsed={sbLightCollapsed}
-                        onCollapsedChange={setSbLightCollapsed}
-                        primaryItems={lightSidebarItems}
-                      />
-                    </div>
-                  </PreviewFrame>
-                </div>
-
-                <div>
-                  <p style={{ fontSize: 12, color: 'var(--muted-foreground)', marginBottom: 8, marginTop: 0 }}>
-                    Dark — {sbDarkCollapsed ? 'collapsed' : 'expanded'}
-                  </p>
-                  <PreviewFrame height={360}>
-                    <div style={{ display: 'flex', height: '100%', padding: 12 }}>
-                      <Sidebar
-                        theme="dark"
-                        collapsed={sbDarkCollapsed}
-                        onCollapsedChange={setSbDarkCollapsed}
-                        primaryItems={darkSidebarItems}
-                      />
-                    </div>
-                  </PreviewFrame>
-                </div>
-              </div>
-            </section>
-
-            {/* Footer */}
-            <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
-              <ComponentHeader id="footer" title="Footer" />
-              <SectionLabel>Preview</SectionLabel>
-              <PreviewFrame height={64}>
-                <div style={{ position: 'absolute', inset: 0 }}>
-                  <Footer />
-                </div>
-              </PreviewFrame>
-            </section>
+            <TabsSection />
+            <HeaderSection />
+            <SidebarSection />
+            <FooterSection />
 
           </main>
         </div>
       </div>
 
-      {/* Page footer */}
+      {/* Page footer chrome */}
       <Footer />
+
     </TooltipProvider>
   )
 }
