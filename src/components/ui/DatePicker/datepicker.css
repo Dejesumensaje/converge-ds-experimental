@@ -1,3 +1,8 @@
+/* ── Component-scoped token ──────────────────────────────────────── */
+:root {
+  --dp-trigger-min-width: 240px;
+}
+
 /*
  * DatePicker — calendar range-band CSS
  *

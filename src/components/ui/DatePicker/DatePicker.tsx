@@ -205,13 +205,12 @@ function groupClass(
   hasValue: boolean,
   error: boolean,
   disabled: boolean,
-  compact = false,
 ) {
   return ({ isFocusWithin, isHovered }: GroupRenderState) =>
     cn(
       /* base */
-      'relative items-center',
-      compact ? 'inline-flex' : 'flex w-full',
+      'relative items-center justify-between',
+      'inline-flex min-w-[var(--dp-trigger-min-width)]',
       'h-12 rounded-[var(--radius-m)]',
       'bg-[var(--input-background)]',
       'appearance-none box-border',
@@ -395,7 +394,6 @@ function SingleDatePicker({
         maxValue={maxValue}
         isOpen={open}
         onOpenChange={setOpen}
-        className="w-full"
       >
         <Group
           className={groupClass(open, hasValue, error, disabled)}
@@ -522,11 +520,11 @@ function RangeDatePicker({
         onOpenChange={setOpen}
       >
         <Group
-          className={groupClass(open, hasValue, error, disabled, true)}
+          className={groupClass(open, hasValue, error, disabled)}
           aria-invalid={error || undefined}
           aria-disabled={disabled || undefined}
         >
-          <div className="flex shrink-0 items-center h-full pl-[var(--spacing-l)]">
+          <div className="flex items-center h-full pl-[var(--spacing-l)] min-w-0">
             <DateInput slot="start" className="flex items-center body-body1-regular cursor-text">
               {(segment) => (
                 <DateSegment segment={segment} className={SEGMENT_CLASS} />
@@ -605,15 +603,7 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     return (
       <div
         ref={ref}
-        className={cn(
-          /*
-           * min-w-[240px]: floor so the trigger is never narrower than a
-           * standard form input. Both modes share the same floor for alignment.
-           * Single: block + w-full (fills container). Range: inline-block (content-sized).
-           */
-          isRange ? 'inline-block min-w-[240px]' : 'block w-full min-w-[240px]',
-          className,
-        )}
+        className={cn('inline-block', className)}
       >
         {isRange ? (
           <RangeDatePicker
