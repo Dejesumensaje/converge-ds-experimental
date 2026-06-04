@@ -54,3 +54,35 @@ export function Row({ children, wrap = true }: { children: React.ReactNode; wrap
     </div>
   )
 }
+
+/* ===================================================================
+   PreviewFrame — boxed frame for layout component demos
+   `contained` adds translateZ(0) to create a stacking context,
+   needed when the child uses position:fixed (e.g. Header).
+   =================================================================== */
+
+export function PreviewFrame({
+  children,
+  height = 340,
+  contained = false,
+}: {
+  children: React.ReactNode
+  height?: number
+  contained?: boolean
+}) {
+  return (
+    <div
+      style={{
+        position: 'relative',
+        height,
+        border: '1px solid var(--border)',
+        borderRadius: 12,
+        overflow: 'hidden',
+        background: 'var(--neutral-gray-background)',
+        ...(contained ? { transform: 'translateZ(0)' } : {}),
+      }}
+    >
+      {children}
+    </div>
+  )
+}

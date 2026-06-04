@@ -1,23 +1,6 @@
 import * as React from 'react'
 import { Footer } from '../../components/layout/Footer/Footer'
-import { ComponentHeader, SectionLabel } from '../helpers'
-
-function PreviewFrame({ children, height = 340 }: { children: React.ReactNode; height?: number }) {
-  return (
-    <div
-      style={{
-        position: 'relative',
-        height,
-        border: '1px solid var(--border)',
-        borderRadius: 12,
-        overflow: 'hidden',
-        background: 'var(--neutral-gray-background)',
-      }}
-    >
-      {children}
-    </div>
-  )
-}
+import { ComponentHeader, SectionLabel, PreviewFrame } from '../helpers'
 
 export function FooterSection() {
   return (

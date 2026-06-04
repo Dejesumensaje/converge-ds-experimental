@@ -2,24 +2,7 @@ import * as React from 'react'
 import { useState } from 'react'
 import { Sidebar, type SidebarItem } from '../../components/layout/Sidebar/Sidebar'
 import { LayoutDashboard, ShoppingCart, BarChart2, Settings, Users } from 'lucide-react'
-import { ComponentHeader, SectionLabel } from '../helpers'
-
-function PreviewFrame({ children, height = 340 }: { children: React.ReactNode; height?: number }) {
-  return (
-    <div
-      style={{
-        position: 'relative',
-        height,
-        border: '1px solid var(--border)',
-        borderRadius: 12,
-        overflow: 'hidden',
-        background: 'var(--neutral-gray-background)',
-      }}
-    >
-      {children}
-    </div>
-  )
-}
+import { ComponentHeader, SectionLabel, PreviewFrame } from '../helpers'
 
 const BASE_ITEMS: SidebarItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
