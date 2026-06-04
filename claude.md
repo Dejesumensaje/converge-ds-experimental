@@ -87,7 +87,7 @@ This convention removes the translation step between Figma references and code. 
 
 - WCAG 2.1 AA minimum, AAA for body text contrast.
 - `:focus-visible` only for focus rings, never `:focus` (avoids ring on mouse click).
-- Effective touch target 44x44px minimum (use padding around small visual buttons).
+- Effective touch target 44×44px minimum for primary interactive controls (use padding around small visual buttons). Exception: compact secondary controls in desktop-first contexts (Toast/ActionBar close button, dense table controls) may go down to a 24×24px floor (WCAG 2.2 SC 2.5.8 AA). Never below 24×24px.
 - Icon-only buttons require `aria-label` — enforce via TypeScript discriminated union.
 - `aria-pressed` on toggle-state buttons, `aria-busy` on loading states, `aria-disabled` on disabled.
 
