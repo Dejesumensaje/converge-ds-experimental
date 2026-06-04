@@ -1,0 +1,45 @@
+/* ================================================================
+   ActionBar — glass container + entrance animation
+   All motion in @layer base. prefers-reduced-motion override in the
+   SAME layer so equal-specificity, later-declaration rule applies.
+   ================================================================ */
+
+@layer base {
+  .action-bar-container {
+    /* Glass shell — identical rgba values to Button glass variant */
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+      0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-full);
+    padding: 4px;
+    /* Entrance — slide-up + fade */
+    animation: actionbar-enter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes actionbar-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* top-* presets slide down instead */
+  .action-bar-container[data-position^='top'] {
+    animation-name: actionbar-enter-top;
+  }
+
+  @keyframes actionbar-enter-top {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Same layer → later → wins when media query matches */
+  @media (prefers-reduced-motion: reduce) {
+    .action-bar-container {
+      animation: none;
+    }
+  }
+}

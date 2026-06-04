@@ -3,6 +3,7 @@ import { ColorsSection } from './sections/ColorsSection'
 import { TypographySection } from './sections/TypographySection'
 import { SpacingSection } from './sections/SpacingSection'
 import { ButtonSection } from './sections/ButtonSection'
+import { ActionBarSection } from './sections/ActionBarSection'
 import { InputSection } from './sections/InputSection'
 import { SelectSection } from './sections/SelectSection'
 import { SwitchSection } from './sections/SwitchSection'
@@ -42,6 +43,7 @@ export const SECTION_REGISTRY: SectionEntry[] = [
   { group: 'foundations',  id: 'typography',       label: 'Typography',      Component: TypographySection },
   { group: 'foundations',  id: 'spacing',          label: 'Spacing',         Component: SpacingSection },
   { group: 'actions',      id: 'button',           label: 'Button',          Component: ButtonSection },
+  { group: 'actions',      id: 'actionbar',        label: 'ActionBar',       Component: ActionBarSection },
   { group: 'forms',        id: 'input',            label: 'Input',           Component: InputSection },
   { group: 'forms',        id: 'select',           label: 'Select',          Component: SelectSection },
   { group: 'forms',        id: 'switch',           label: 'Switch',          Component: SwitchSection },
