@@ -12,12 +12,11 @@ import './actionbar.css'
   • ActionBar does NOT steal or trap focus — it is non-modal.
     Tab reaches its controls naturally; Esc dismisses (if onDismiss present).
 
-  • To announce dynamic content (e.g. "3 items selected"), wrap the
-    changing text inside ActionBarLeading with aria-live="polite":
-      <ActionBarLeading>
-        <span aria-live="polite">{count} items selected</span>
-      </ActionBarLeading>
-    Do NOT put aria-live on the region itself — it over-announces.
+  • For dynamic leading content (e.g. "3 items selected"), pass the liveText
+    prop — ActionBar renders a sr-only live region automatically:
+      <ActionBar liveText={`${count} items selected`} ...>
+    Omit liveText when the leading is static — no live region is rendered.
+    Use politeness="assertive" for urgent state changes; default is "polite".
 
   • For exit animation: v1 unmounts immediately (consumer controls visibility).
     Use a presence wrapper (e.g. Radix Presence, Framer motion AnimatePresence)
@@ -54,7 +53,7 @@ export type ActionBarPosition =
   | 'top-center'
   | 'top-right'
 
-export type ActionBarProps = {
+export type ActionBarProps = Omit<React.HTMLAttributes<HTMLDivElement>, 'aria-label'> & {
   /** Required — names the region for screen readers. */
   'aria-label': string
   /**
@@ -68,10 +67,21 @@ export type ActionBarProps = {
    * Memoize with useCallback to avoid effect churn.
    */
   onDismiss?: () => void
-  className?: string
   /** Extra classes forwarded to the inner dark pill div. */
   pillClassName?: string
-  children?: React.ReactNode
+  /**
+   * When set, ActionBar renders a sr-only live region and announces this
+   * text to screen readers on every change. Use for dynamic leading content
+   * (e.g., selection count). Omit when the leading is static — no region
+   * is rendered, so AT users are not interrupted unnecessarily.
+   */
+  liveText?: string
+  /**
+   * Controls the urgency of the live region. 'polite' (default) waits for
+   * the user to finish their current task; 'assertive' interrupts immediately.
+   * Use 'assertive' only for critical state changes.
+   */
+  politeness?: 'polite' | 'assertive'
 }
 
 export type ActionBarLeadingProps = React.HTMLAttributes<HTMLDivElement>
@@ -80,6 +90,9 @@ export type ActionBarActionsProps = React.HTMLAttributes<HTMLDivElement>
 
 /* =================================================================
    Position presets
+   Note: centered presets set transform: translateX(-50%) for horizontal
+   centering. If the consumer passes a style.transform it will override
+   this value — acceptable escape hatch, but centering will break.
    ================================================================= */
 
 const POSITION_STYLE: Record<ActionBarPosition, React.CSSProperties> = {
@@ -101,7 +114,11 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
       onDismiss,
       className,
       pillClassName,
+      liveText,
+      politeness = 'polite',
       children,
+      style,
+      ...restProps
     },
     ref
   ) => {
@@ -130,13 +147,26 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
     return (
       /* ── Outer: glass shell ──────────────────────────────────── */
       <div
+        {...restProps}
         ref={ref}
         role="region"
         aria-label={ariaLabel}
         data-position={position}
         className={cn('action-bar-container inline-flex', className)}
-        style={positionStyle}
+        style={{ ...positionStyle, ...style }}
       >
+        {/* sr-only live region — only rendered when liveText is provided */}
+        {liveText !== undefined && (
+          <div
+            role="status"
+            aria-live={politeness}
+            aria-atomic="true"
+            className="sr-only"
+          >
+            {liveText}
+          </div>
+        )}
+
         {/* ── Inner: dark pill ─────────────────────────────────── */}
         <div
           className={cn(
@@ -161,7 +191,7 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
                 'text-[var(--sidebar-foreground)] opacity-60',
                 'hover:opacity-100 hover:bg-white/10',
                 /* C3: solid --sidebar-foreground ring (white in light mode) over
-                   the dark pill gives 12.92:1 contrast — well above the 3:1 minimum.
+                   the dark pill gives 12.67:1 contrast — well above the 3:1 minimum.
                    ring-offset-[var(--sidebar)] matches the pill bg so the 2px gap
                    is invisible and the ring appears to hug the button cleanly. */
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -184,9 +214,9 @@ ActionBar.displayName = 'ActionBar'
 
 /* =================================================================
    ActionBarLeading — left slot
-   W2: extends HTMLAttributes so consumers can pass data-testid, aria-*,
+   Extends HTMLAttributes so consumers can pass data-testid, aria-*,
    event handlers directly on the slot element.
-   W3: min-w-0 + overflow-hidden allow the leading text to shrink when
+   min-w-0 + overflow-hidden allow the leading text to shrink when
    the pill is tight, preventing actions from being pushed off-screen.
    ================================================================= */
 

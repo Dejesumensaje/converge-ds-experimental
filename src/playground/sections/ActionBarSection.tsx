@@ -37,16 +37,20 @@ export function ActionBarSection() {
       {/* ── Demo 1: Bulk-action bar (main pattern) ────────────────── */}
       <SectionLabel>Bulk actions — leading · actions · dismiss</SectionLabel>
       <p className="caption-caption text-muted-foreground mb-[var(--spacing-m)] mt-0">
-        The counter uses{' '}
-        <code style={{ fontFamily: 'monospace' }}>aria-live="polite"</code>{' '}
-        on the leading text. Click Download to decrement — screen readers announce each change.
+        The <code style={{ fontFamily: 'monospace' }}>liveText</code> prop renders a sr-only
+        live region — screen readers announce the count on every change without over-announcing
+        the whole region. Click Download to decrement.
       </p>
       <div style={{ minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {demo1Visible ? (
-          <ActionBar aria-label="Bulk actions" onDismiss={dismissDemo1}>
+          <ActionBar
+            aria-label="Bulk actions"
+            onDismiss={dismissDemo1}
+            liveText={`${selectedCount} item${selectedCount !== 1 ? 's' : ''} selected`}
+          >
             <ActionBarLeading>
-              {/* Dynamic text: live region fires on every count change */}
-              <span aria-live="polite">
+              {/* Visual only — announcement handled by ActionBar's liveText live region */}
+              <span>
                 {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
               </span>
             </ActionBarLeading>
