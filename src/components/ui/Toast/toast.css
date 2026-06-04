@@ -1,0 +1,98 @@
+/* ================================================================
+   Toast — pill enter/exit animations + swipe-to-dismiss
+   All motion defined in @layer base.
+   prefers-reduced-motion override in the SAME layer so equal-
+   specificity, later-declaration cascade wins (lesson from ActionBar).
+   ================================================================ */
+
+@layer base {
+  /* ── Root: pill shape + elevation ─────────────────────────────── */
+  .toast-root {
+    box-sizing: border-box;
+    border-radius: var(--radius-full);
+    box-shadow: var(--elevation-md);
+    /* Radix sets width via the viewport's list; we enforce full-width */
+    width: 100%;
+    /* Swipe tracking */
+    user-select: none;
+    touch-action: none;
+  }
+
+  /* ── Enter animations by anchor (top vs bottom) ───────────────── */
+  .toast-root.toast-enter-bottom[data-state='open'] {
+    animation: toast-slide-up 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .toast-root.toast-enter-top[data-state='open'] {
+    animation: toast-slide-down 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* ── Exit animation (same for all positions) ──────────────────── */
+  .toast-root[data-state='closed'] {
+    animation: toast-fade-out 200ms ease-in both;
+  }
+
+  @keyframes toast-slide-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes toast-slide-down {
+    from { opacity: 0; transform: translateY(-14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes toast-fade-out {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(4px); }
+  }
+
+  /* ── Swipe feedback ───────────────────────────────────────────── */
+  .toast-root[data-swipe='move'] {
+    transform: translateX(var(--radix-toast-swipe-move-x));
+    transition: none;
+  }
+
+  .toast-root[data-swipe='cancel'] {
+    transform: translateX(0);
+    transition: transform 200ms ease;
+  }
+
+  .toast-root[data-swipe='end'] {
+    animation: toast-swipe-out 100ms ease-out both;
+  }
+
+  @keyframes toast-swipe-out {
+    from { transform: translateX(var(--radix-toast-swipe-end-x)); }
+    to   { transform: translateX(calc(var(--radix-toast-swipe-end-x) * 4)); opacity: 0; }
+  }
+
+  /* ── Action + Close button resets (self-contained) ────────────── */
+  .toast-action-btn,
+  .toast-close-btn {
+    appearance: none;
+    background: transparent;
+    border: none;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  /* ── Viewport: no default Radix padding ──────────────────────── */
+  .toast-viewport {
+    padding: 0 !important;
+  }
+
+  /* ── Reduced motion — same layer, later declaration wins ─────── */
+  @media (prefers-reduced-motion: reduce) {
+    .toast-root.toast-enter-bottom[data-state='open'],
+    .toast-root.toast-enter-top[data-state='open'],
+    .toast-root[data-state='closed'],
+    .toast-root[data-swipe='end'] {
+      animation: none;
+    }
+    .toast-root[data-swipe='cancel'] {
+      transition: none;
+    }
+  }
+}
