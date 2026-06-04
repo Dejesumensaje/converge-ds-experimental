@@ -3,7 +3,7 @@
  * No bare element selectors. All scoped under .breadcrumb-* classes.
  */
 
-/* Root nav reset */
+/* Root nav */
 .breadcrumb-root {
   box-sizing: border-box;
 }
@@ -20,7 +20,7 @@
   padding: 0;
 }
 
-/* Each breadcrumb slot */
+/* Item slot */
 .breadcrumb-item {
   box-sizing: border-box;
   display: flex;
@@ -35,29 +35,53 @@
 }
 
 /*
- * Interactive element reset — applied to both <a> and <button> breadcrumb items
- * to neutralise browser chrome that would leak if no global reset is present (§3.6).
+ * Trail interactive reset (<a> and <button> for items without icons).
+ *
+ * KEY: `display: inline` matches the current-page <span> so all items
+ * share the same baseline and render at the same visual size.
+ *
+ * KEY: `font-family: inherit` (NOT the `font` shorthand) — the shorthand
+ * `font: inherit` would reset font-size/weight/line-height and could override
+ * the `body-body2-regular` typography class depending on CSS cascade order.
+ * font-family: inherit alone avoids the conflict while still preventing the
+ * browser's default button font-family from leaking.
+ *
+ * text-decoration is intentionally NOT set here; Tailwind's `no-underline`
+ * utility (applied via className) handles the default state, and
+ * `hover:underline` / `focus-visible:underline` handle the affordance states.
+ * This keeps everything in @layer utilities where cascade order is predictable.
  */
 .breadcrumb-interactive {
-  /* button reset */
   appearance: none;
   background: transparent;
   border: none;
   margin: 0;
   padding: 0;
   cursor: pointer;
-  /* shared */
-  font: inherit;
-  color: inherit;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
+  font-family: inherit;
+  display: inline;
 }
 
-/* <a> reset: ensure no underline in bare environments */
-.breadcrumb-link {
-  text-decoration: none;
+/*
+ * Back variant interactive reset (<a> and <button> wrapping ArrowLeft icon + label).
+ * Uses inline-flex so the icon and text align vertically.
+ */
+.breadcrumb-back-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
 }
-.breadcrumb-link:hover {
-  text-decoration: none;
+
+/* Non-interactive back fallback (no href, no onClick) */
+.breadcrumb-back-static {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
 }

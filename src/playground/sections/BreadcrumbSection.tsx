@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Breadcrumb, type BreadcrumbItem } from '../../components/ui'
 import { ComponentHeader, SectionLabel } from '../helpers'
 
-/* ---- Data ---- */
+/* ---- Trail data ---- */
 
 const SHORT_TRAIL: BreadcrumbItem[] = [
   { label: 'Home', href: '#' },
@@ -24,9 +24,8 @@ const LONG_TRAIL: BreadcrumbItem[] = [
   { label: 'Store #142' },
 ]
 
-/* onClick variant — no hrefs, all navigation via callbacks */
 const ONCLICK_TRAIL: BreadcrumbItem[] = [
-  { label: 'Dashboard',  onClick: () => alert('Home clicked') },
+  { label: 'Dashboard',  onClick: () => alert('Dashboard clicked') },
   { label: 'Franchises', onClick: () => alert('Franchises clicked') },
   { label: 'Overview' },
 ]
@@ -38,27 +37,43 @@ export function BreadcrumbSection() {
     <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
       <ComponentHeader id="breadcrumb" title="Breadcrumb" />
 
-      <SectionLabel>Short trail (2 items)</SectionLabel>
+      {/* ---- variant="trail" ---- */}
+      <SectionLabel>Trail — short (2 items)</SectionLabel>
       <Breadcrumb items={SHORT_TRAIL} />
 
       <div style={{ marginTop: 'var(--spacing-xxl)' }}>
-        <SectionLabel>Medium trail (3 items)</SectionLabel>
+        <SectionLabel>Trail — medium (3 items)</SectionLabel>
         <Breadcrumb items={MEDIUM_TRAIL} />
       </div>
 
       <div style={{ marginTop: 'var(--spacing-xxl)' }}>
-        <SectionLabel>Long trail (6 items)</SectionLabel>
+        <SectionLabel>Trail — long (6 items)</SectionLabel>
         <Breadcrumb items={LONG_TRAIL} />
       </div>
 
       <div style={{ marginTop: 'var(--spacing-xxl)' }}>
-        <SectionLabel>Long trail — collapsed to 4 visible (maxItems=4)</SectionLabel>
+        <SectionLabel>Trail — long, collapsed (maxItems=4)</SectionLabel>
         <Breadcrumb items={LONG_TRAIL} maxItems={4} />
       </div>
 
       <div style={{ marginTop: 'var(--spacing-xxl)' }}>
-        <SectionLabel>onClick navigation (no hrefs)</SectionLabel>
+        <SectionLabel>Trail — onClick navigation (no hrefs)</SectionLabel>
         <Breadcrumb items={ONCLICK_TRAIL} />
+      </div>
+
+      {/* ---- variant="back" ---- */}
+      <div style={{ marginTop: 'var(--spacing-xxxl)' }}>
+        <SectionLabel>Back — with href</SectionLabel>
+        <Breadcrumb variant="back" label="Back to scenarios" href="#" />
+      </div>
+
+      <div style={{ marginTop: 'var(--spacing-xxl)' }}>
+        <SectionLabel>Back — with onClick</SectionLabel>
+        <Breadcrumb
+          variant="back"
+          label="Back to forecast list"
+          onClick={() => alert('Back clicked')}
+        />
       </div>
     </section>
   )

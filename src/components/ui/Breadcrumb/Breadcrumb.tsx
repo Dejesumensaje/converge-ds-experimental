@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, ArrowLeft } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import './breadcrumb.css'
 
@@ -9,77 +9,152 @@ import './breadcrumb.css'
 
 export type BreadcrumbItem = {
   label: string
-  /** When provided, the item is rendered as an interactive link. */
+  /** Renders as <a>. */
   href?: string
-  /** When provided (and href is absent), the item is rendered as an interactive button. */
+  /** Renders as <button> when href is absent. */
   onClick?: () => void
 }
 
-export type BreadcrumbProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
-  /** Trail of items. The last item is the current page (non-interactive, aria-current="page"). */
+type BaseHtmlProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'>
+
+export type BreadcrumbTrailProps = BaseHtmlProps & {
+  variant?: 'trail'
+  /** Trail of items. Last item = current page (non-interactive, aria-current="page"). */
   items: BreadcrumbItem[]
-  /**
-   * Custom separator node rendered between items.
-   * Defaults to ChevronRight (16px).
-   */
+  /** Custom separator. Defaults to ChevronRight (14px). */
   separator?: React.ReactNode
   /**
-   * Maximum number of items to show before collapsing the middle ones into "…".
-   * Requires at least 3 items to have any effect (keeps first + ellipsis + last).
-   * Omit to always show all items.
+   * Collapse middle items into "…" when the trail exceeds this count.
+   * Must be ≥ 3. Omit to always show all items.
    */
   maxItems?: number
 }
 
+export type BreadcrumbBackProps = BaseHtmlProps & {
+  variant: 'back'
+  /** Full label, e.g. "Back to scenarios". */
+  label: string
+  /** Renders as <a>. Takes priority over onClick. */
+  href?: string
+  /** Renders as <button role="link"> when href is absent. */
+  onClick?: () => void
+}
+
+export type BreadcrumbProps = BreadcrumbTrailProps | BreadcrumbBackProps
+
 /* =================================================================
-   Shared interactive classes
+   Shared style constants
    ================================================================= */
 
-const INTERACTIVE_CLASSES = [
-  'breadcrumb-interactive', // browser reset (see breadcrumb.css)
+/**
+ * Trail interactive items (text only, display: inline to match the current-page <span>).
+ * `no-underline` resets UA <a> underline; `hover:underline` / `focus-visible:underline`
+ * provide affordance. Both are in @layer utilities so they beat any unlayered reset.
+ */
+const TRAIL_LINK_CLS = cn(
+  'breadcrumb-interactive', // CSS reset: appearance/bg/border/margin/padding/cursor/font-family/display:inline
   'body-body2-regular',
-  'text-muted-foreground',
-  'hover:text-foreground',
+  'text-muted-foreground hover:text-foreground',
+  'no-underline hover:underline focus-visible:underline',
   'transition-colors duration-150',
-  'rounded-[var(--radius-xs)]',
-  'outline-none',
-  'focus-visible:ring-2',
-  'focus-visible:ring-offset-1',
+  'rounded-[var(--radius-xs)] outline-none',
+  'focus-visible:ring-2 focus-visible:ring-offset-1',
   'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
-].join(' ')
+)
+
+/**
+ * Back variant interactive element (icon + text, needs inline-flex for vertical alignment).
+ */
+const BACK_LINK_CLS = cn(
+  'breadcrumb-back-btn', // CSS reset: same as above but display:inline-flex + align-items:center + gap
+  'body-body2-regular',
+  'text-muted-foreground hover:text-foreground',
+  'no-underline hover:underline focus-visible:underline',
+  'transition-colors duration-150',
+  'rounded-[var(--radius-xs)] outline-none',
+  'focus-visible:ring-2 focus-visible:ring-offset-1',
+  'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+)
 
 /* =================================================================
    Breadcrumb
    ================================================================= */
 
 export const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
-  ({ items, separator, maxItems, className, ...props }, ref) => {
+  (props, ref) => {
+    // useState must be unconditional — only used in trail branch
     const [expanded, setExpanded] = React.useState(false)
 
+    /* ----------------------------------------------------------------
+       Back variant
+    ---------------------------------------------------------------- */
+    if (props.variant === 'back') {
+      const { variant: _v, label, href, onClick, className, ...navProps } = props
+
+      const content = href ? (
+        <a href={href} className={BACK_LINK_CLS}>
+          <ArrowLeft size={16} aria-hidden="true" className="shrink-0" />
+          {label}
+        </a>
+      ) : onClick ? (
+        <button
+          type="button"
+          role="link"
+          onClick={onClick}
+          className={BACK_LINK_CLS}
+        >
+          <ArrowLeft size={16} aria-hidden="true" className="shrink-0" />
+          {label}
+        </button>
+      ) : (
+        // Non-interactive fallback (no href, no onClick)
+        <span className="body-body2-regular text-muted-foreground breadcrumb-back-static">
+          <ArrowLeft size={16} aria-hidden="true" className="shrink-0" />
+          {label}
+        </span>
+      )
+
+      return (
+        <nav
+          ref={ref}
+          aria-label="Breadcrumb"
+          className={cn('breadcrumb-root', className)}
+          {...navProps}
+        >
+          {content}
+        </nav>
+      )
+    }
+
+    /* ----------------------------------------------------------------
+       Trail variant (TypeScript narrows props to BreadcrumbTrailProps here)
+    ---------------------------------------------------------------- */
+    const {
+      variant: _v,
+      items,
+      separator,
+      maxItems,
+      className,
+      ...navProps
+    } = props as BreadcrumbTrailProps
+
     const sep = separator ?? (
-      <ChevronRight
-        size={14}
-        aria-hidden="true"
-        className="shrink-0 text-muted-foreground"
-      />
+      <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-muted-foreground" />
     )
 
-    /* ---- Truncation logic ---- */
+    /* Truncation */
     const shouldCollapse =
       !expanded &&
       maxItems !== undefined &&
       maxItems >= 3 &&
       items.length > maxItems
 
-    // Slot type: BreadcrumbItem or null (null = ellipsis placeholder)
     type Slot = BreadcrumbItem | null
     let slots: Slot[]
 
     if (shouldCollapse) {
-      // Keep first 1, show "…", keep last (maxItems - 2) items
       const tailCount = maxItems - 2
-      const tail = items.slice(items.length - tailCount)
-      slots = [items[0], null, ...tail]
+      slots = [items[0], null, ...items.slice(items.length - tailCount)]
     } else {
       slots = items
     }
@@ -89,28 +164,34 @@ export const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
         ref={ref}
         aria-label="Breadcrumb"
         className={cn('breadcrumb-root', className)}
-        {...props}
+        {...navProps}
       >
         <ol className="breadcrumb-list">
           {slots.map((slot, idx) => {
             const isLast = idx === slots.length - 1
             const isEllipsis = slot === null
-
-            /* stable key */
-            const key = isEllipsis
-              ? '__ellipsis'
-              : `${slot!.label}-${idx}`
+            const key = isEllipsis ? '__ellipsis' : `${slot!.label}-${idx}`
 
             return (
               <React.Fragment key={key}>
                 <li className="breadcrumb-item">
                   {isEllipsis ? (
-                    /* Collapsed middle items — expand on click */
+                    /* Expand collapsed items */
                     <button
                       type="button"
                       aria-label="Show all breadcrumb items"
                       onClick={() => setExpanded(true)}
-                      className={cn(INTERACTIVE_CLASSES, 'px-[var(--spacing-xxs)]')}
+                      className={cn(
+                        'breadcrumb-interactive',
+                        'body-body2-regular',
+                        'text-muted-foreground hover:text-foreground',
+                        'no-underline', // ellipsis doesn't get underline
+                        'transition-colors duration-150',
+                        'px-[var(--spacing-xxs)]',
+                        'rounded-[var(--radius-xs)] outline-none',
+                        'focus-visible:ring-2 focus-visible:ring-offset-1',
+                        'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+                      )}
                     >
                       &hellip;
                     </button>
@@ -118,41 +199,30 @@ export const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
                     /* Current page — non-interactive */
                     <span
                       aria-current="page"
-                      className={cn(
-                        'body-body2-regular',
-                        'text-foreground',
-                      )}
+                      className="body-body2-regular text-foreground"
                     >
                       {slot!.label}
                     </span>
                   ) : slot!.href ? (
-                    /* Link item */
-                    <a
-                      href={slot!.href}
-                      className={cn(INTERACTIVE_CLASSES, 'breadcrumb-link')}
-                    >
+                    <a href={slot!.href} className={TRAIL_LINK_CLS}>
                       {slot!.label}
                     </a>
                   ) : slot!.onClick ? (
-                    /* Button item */
                     <button
                       type="button"
                       onClick={slot!.onClick}
-                      className={INTERACTIVE_CLASSES}
+                      className={TRAIL_LINK_CLS}
                     >
                       {slot!.label}
                     </button>
                   ) : (
-                    /* Static non-interactive non-current item (no href, no onClick) */
-                    <span
-                      className={cn('body-body2-regular', 'text-muted-foreground')}
-                    >
+                    /* Static non-current item */
+                    <span className="body-body2-regular text-muted-foreground">
                       {slot!.label}
                     </span>
                   )}
                 </li>
 
-                {/* Separator — aria-hidden, outside navigable content */}
                 {!isLast && (
                   <li aria-hidden="true" className="breadcrumb-sep">
                     {sep}
