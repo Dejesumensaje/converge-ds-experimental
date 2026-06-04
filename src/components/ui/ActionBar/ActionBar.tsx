@@ -26,6 +26,25 @@ import './actionbar.css'
 */
 
 /* =================================================================
+   Module-level dismiss stack (C2 + W7 fix)
+
+   Guarantees that:
+   1. Only the topmost mounted ActionBar responds to Esc (multi-instance safe).
+   2. Yields to Radix overlays — Dialog, AlertModal, Drawer, and
+      FullScreenAlert all set document.body.style.pointerEvents = 'none'
+      when open; if that flag is active the ActionBar stays silent.
+
+   ⚠ Memoize onDismiss with useCallback to prevent effect churn on
+     parent re-renders and avoid spurious stack push/pop cycles.
+   ================================================================= */
+const dismissStack: Array<() => void> = []
+
+function isModalActive(): boolean {
+  return typeof document !== 'undefined' &&
+    document.body.style.pointerEvents === 'none'
+}
+
+/* =================================================================
    Types
    ================================================================= */
 
@@ -46,31 +65,28 @@ export type ActionBarProps = {
   /**
    * When provided, renders an integrated X button and wires Esc → onDismiss.
    * Omit to let consumers place their own dismiss action inside a slot.
+   * Memoize with useCallback to avoid effect churn.
    */
   onDismiss?: () => void
   className?: string
+  /** Extra classes forwarded to the inner dark pill div. */
+  pillClassName?: string
   children?: React.ReactNode
 }
 
-export type ActionBarLeadingProps = {
-  children?: React.ReactNode
-  className?: string
-}
+export type ActionBarLeadingProps = React.HTMLAttributes<HTMLDivElement>
 
-export type ActionBarActionsProps = {
-  children?: React.ReactNode
-  className?: string
-}
+export type ActionBarActionsProps = React.HTMLAttributes<HTMLDivElement>
 
 /* =================================================================
    Position presets
    ================================================================= */
 
 const POSITION_STYLE: Record<ActionBarPosition, React.CSSProperties> = {
-  'bottom-center': { position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 100 },
-  'bottom-right':  { position: 'fixed', bottom: 24, right: 24, zIndex: 100 },
-  'top-center':    { position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 100 },
-  'top-right':     { position: 'fixed', top: 24, right: 24, zIndex: 100 },
+  'bottom-center': { position: 'fixed', bottom: 'var(--spacing-xl)', left: '50%', transform: 'translateX(-50%)', zIndex: 100 },
+  'bottom-right':  { position: 'fixed', bottom: 'var(--spacing-xl)', right: 'var(--spacing-xl)', zIndex: 100 },
+  'top-center':    { position: 'fixed', top: 'var(--spacing-xl)', left: '50%', transform: 'translateX(-50%)', zIndex: 100 },
+  'top-right':     { position: 'fixed', top: 'var(--spacing-xl)', right: 'var(--spacing-xl)', zIndex: 100 },
 }
 
 /* =================================================================
@@ -84,18 +100,29 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
       position,
       onDismiss,
       className,
+      pillClassName,
       children,
     },
     ref
   ) => {
-    /* Esc → onDismiss (non-capturing, non-trapping) */
+    /* Esc → onDismiss: topmost instance only, yields to modal overlays */
     React.useEffect(() => {
       if (!onDismiss) return
+      dismissStack.push(onDismiss)
+
       const handle = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') onDismiss()
+        if (e.key !== 'Escape') return
+        if (isModalActive()) return
+        if (dismissStack[dismissStack.length - 1] !== onDismiss) return
+        onDismiss()
       }
       document.addEventListener('keydown', handle)
-      return () => document.removeEventListener('keydown', handle)
+
+      return () => {
+        document.removeEventListener('keydown', handle)
+        const idx = dismissStack.lastIndexOf(onDismiss)
+        if (idx !== -1) dismissStack.splice(idx, 1)
+      }
     }, [onDismiss])
 
     const positionStyle = position ? POSITION_STYLE[position] : undefined
@@ -115,8 +142,9 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
           className={cn(
             'flex items-center gap-[var(--spacing-m)]',
             'bg-[var(--sidebar)] rounded-full',
-            'px-[var(--spacing-m)] py-[var(--spacing-s)]',
+            'px-[var(--spacing-xl)] py-[var(--spacing-s)]',
             'text-[var(--sidebar-foreground)]',
+            pillClassName,
           )}
         >
           {children}
@@ -132,8 +160,13 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
                 'w-7 h-7 rounded-full',
                 'text-[var(--sidebar-foreground)] opacity-60',
                 'hover:opacity-100 hover:bg-white/10',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0',
-                'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+                /* C3: solid --sidebar-foreground ring (white in light mode) over
+                   the dark pill gives 12.92:1 contrast — well above the 3:1 minimum.
+                   ring-offset-[var(--sidebar)] matches the pill bg so the 2px gap
+                   is invisible and the ring appears to hug the button cleanly. */
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                'focus-visible:ring-[var(--sidebar-foreground)]',
+                'focus-visible:ring-offset-[var(--sidebar)]',
                 'transition-opacity duration-150 cursor-pointer',
                 '[box-sizing:border-box] appearance-none border-none bg-transparent m-0',
               )}
@@ -151,14 +184,19 @@ ActionBar.displayName = 'ActionBar'
 
 /* =================================================================
    ActionBarLeading — left slot
+   W2: extends HTMLAttributes so consumers can pass data-testid, aria-*,
+   event handlers directly on the slot element.
+   W3: min-w-0 + overflow-hidden allow the leading text to shrink when
+   the pill is tight, preventing actions from being pushed off-screen.
    ================================================================= */
 
 export const ActionBarLeading = React.forwardRef<HTMLDivElement, ActionBarLeadingProps>(
-  ({ children, className }, ref) => (
+  ({ children, className, ...props }, ref) => (
     <div
       ref={ref}
+      {...props}
       className={cn(
-        'flex items-center gap-[var(--spacing-s)] shrink-0',
+        'flex items-center gap-[var(--spacing-s)] min-w-0 overflow-hidden',
         'body-body2-regular text-[var(--sidebar-foreground)] opacity-80',
         className
       )}
@@ -172,14 +210,17 @@ ActionBarLeading.displayName = 'ActionBarLeading'
 
 /* =================================================================
    ActionBarActions — right slot (pushes to far right via ml-auto)
+   shrink-0 ensures the actions area never gets squeezed when the
+   leading slot has long text.
    ================================================================= */
 
 export const ActionBarActions = React.forwardRef<HTMLDivElement, ActionBarActionsProps>(
-  ({ children, className }, ref) => (
+  ({ children, className, ...props }, ref) => (
     <div
       ref={ref}
+      {...props}
       className={cn(
-        'flex items-center gap-[var(--spacing-s)] ml-auto',
+        'flex items-center gap-[var(--spacing-s)] ml-auto shrink-0',
         className
       )}
     >

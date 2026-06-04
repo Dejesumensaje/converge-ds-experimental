@@ -3,3 +3,21 @@
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css";
 @import "./theme.css";
+
+/*
+  DS-wide reduced-motion safety net.
+  !important overrides any layer (including @layer utilities where Tailwind
+  places transition-* / animation-* utilities). 0.01ms keeps transitionend /
+  animationend firing so JS logic that listens for those events stays intact.
+  Component-level @layer base overrides (Skeleton, Toast, etc.) are now
+  redundant for motion suppression but harmless — they still own their own
+  background/opacity reset logic which this block does not touch.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

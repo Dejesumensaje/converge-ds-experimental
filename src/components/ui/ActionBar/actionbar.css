@@ -2,6 +2,14 @@
    ActionBar — glass container + entrance animation
    All motion in @layer base. prefers-reduced-motion override in the
    SAME layer so equal-specificity, later-declaration rule applies.
+
+   C1 FIX — centering vs. animation conflict:
+   bottom-center / top-center positions apply transform: translateX(-50%)
+   as an inline style. Old keyframes animated `transform: translateY(...)`,
+   which clobbered that inline value at animation end (snap-left bug).
+   Fix: keyframes now animate the standalone `translate` property
+   (CSS Transforms Level 2), which is fully independent of `transform`.
+   The inline translateX(-50%) is therefore never touched.
    ================================================================ */
 
 @layer base {
@@ -16,14 +24,14 @@
       inset 0 -1px 0 rgba(0, 0, 0, 0.05),
       0 8px 32px rgba(0, 0, 0, 0.15);
     border-radius: var(--radius-full);
-    padding: 4px;
-    /* Entrance — slide-up + fade */
+    padding: var(--spacing-xxs);
+    /* Entrance — slide-up + fade (uses `translate`, not `transform`) */
     animation: actionbar-enter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   @keyframes actionbar-enter {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; translate: 0 10px; }
+    to   { opacity: 1; translate: 0 0;    }
   }
 
   /* top-* presets slide down instead */
@@ -32,8 +40,8 @@
   }
 
   @keyframes actionbar-enter-top {
-    from { opacity: 0; transform: translateY(-10px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; translate: 0 -10px; }
+    to   { opacity: 1; translate: 0 0;     }
   }
 
   /* Same layer → later → wins when media query matches */
