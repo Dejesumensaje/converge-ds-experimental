@@ -7,18 +7,14 @@ export function CheckboxSection() {
   /* --- md states --- */
   const [mdUnchecked, setMdUnchecked]         = useState<boolean | 'indeterminate'>(false)
   const [mdChecked, setMdChecked]             = useState<boolean | 'indeterminate'>(true)
-  const [mdIndet]                             = useState<boolean | 'indeterminate'>('indeterminate')
-  const [mdDisUnchecked]                      = useState<boolean | 'indeterminate'>(false)
-  const [mdDisChecked]                        = useState<boolean | 'indeterminate'>(true)
+  const [mdIndet, setMdIndet]                 = useState<boolean | 'indeterminate'>('indeterminate')
 
   /* --- sm states --- */
   const [smUnchecked, setSmUnchecked]         = useState<boolean | 'indeterminate'>(false)
   const [smChecked, setSmChecked]             = useState<boolean | 'indeterminate'>(true)
-  const [smIndet]                             = useState<boolean | 'indeterminate'>('indeterminate')
-  const [smDisUnchecked]                      = useState<boolean | 'indeterminate'>(false)
-  const [smDisChecked]                        = useState<boolean | 'indeterminate'>(true)
+  const [smIndet, setSmIndet]                 = useState<boolean | 'indeterminate'>('indeterminate')
 
-  /* --- error state --- */
+  /* --- error states --- */
   const [errChecked, setErrChecked]           = useState<boolean | 'indeterminate'>(false)
   const [errMsgChecked, setErrMsgChecked]     = useState<boolean | 'indeterminate'>(false)
 
@@ -44,24 +40,25 @@ export function CheckboxSection() {
         <Checkbox
           size="md"
           checked={mdIndet}
+          onCheckedChange={() => setMdIndet('indeterminate')}
           label="Indeterminate"
         />
         <Checkbox
           size="md"
-          checked={mdDisUnchecked}
+          defaultChecked={false}
           disabled
           label="Disabled unchecked"
         />
         <Checkbox
           size="md"
-          checked={mdDisChecked}
+          defaultChecked={true}
           disabled
           label="Disabled checked"
         />
       </Row>
 
       {/* ── Small ────────────────────────────────────────────────── */}
-      <div style={{ marginTop: 32 }}>
+      <div style={{ marginTop: 'var(--spacing-xxl)' }}>
         <SectionLabel>Small — all states</SectionLabel>
         <Row>
           <Checkbox
@@ -79,17 +76,18 @@ export function CheckboxSection() {
           <Checkbox
             size="sm"
             checked={smIndet}
+            onCheckedChange={() => setSmIndet('indeterminate')}
             label="Indeterminate"
           />
           <Checkbox
             size="sm"
-            checked={smDisUnchecked}
+            defaultChecked={false}
             disabled
             label="Disabled unchecked"
           />
           <Checkbox
             size="sm"
-            checked={smDisChecked}
+            defaultChecked={true}
             disabled
             label="Disabled checked"
           />
@@ -97,14 +95,14 @@ export function CheckboxSection() {
       </div>
 
       {/* ── Error states ─────────────────────────────────────────── */}
-      <div style={{ marginTop: 32 }}>
+      <div style={{ marginTop: 'var(--spacing-xxl)' }}>
         <SectionLabel>Error states</SectionLabel>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--spacing-xl)', flexWrap: 'wrap' }}>
           <Checkbox
             size="md"
             checked={errChecked}
             onCheckedChange={setErrChecked}
-            invalid
+            error
             label="Invalid (no message)"
             helperText="Required field"
           />
@@ -119,7 +117,7 @@ export function CheckboxSection() {
       </div>
 
       {/* ── Helper text ──────────────────────────────────────────── */}
-      <div style={{ marginTop: 32 }}>
+      <div style={{ marginTop: 'var(--spacing-xxl)' }}>
         <SectionLabel>With helper text</SectionLabel>
         <Checkbox
           size="md"

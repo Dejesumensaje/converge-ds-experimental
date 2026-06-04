@@ -5,20 +5,12 @@ import { cn } from '../../../lib/utils'
 import './checkbox.css'
 
 /* =================================================================
-   NOTE on border-radius:
-   --radius-m (8px) is the smallest token in theme.css. On a 16×16px
-   box this is 50% = circular; on 14×14px it's 57% = also circular.
-   Standard checkboxes use ~2–4px. A --radius-xs token should be added
-   to theme.css. Using --radius-m until user defines a smaller token.
-   ================================================================= */
-
-/* =================================================================
    Types
    ================================================================= */
 
 export type CheckboxSize = 'sm' | 'md'
 
-export type CheckboxProps = {
+type BaseCheckboxProps = {
   id?: string
   size?: CheckboxSize
   /** Pass `'indeterminate'` for tri-state. Requires controlled mode. */
@@ -27,13 +19,21 @@ export type CheckboxProps = {
   onCheckedChange?: (checked: boolean | 'indeterminate') => void
   disabled?: boolean
   /** Triggers error styling (red border). */
-  invalid?: boolean
-  label?: string
+  error?: boolean
   helperText?: string
-  /** Optional error copy. Also sets invalid state when present. */
+  /** Optional error copy. Also sets error state when present. */
   errorMessage?: string
   className?: string
 }
+
+/**
+ * Either `label` or `aria-label` is required to give the control an accessible name.
+ * When both are provided the visible label takes precedence for sighted users; `aria-label`
+ * is forwarded to the underlying button for screen readers.
+ */
+export type CheckboxProps =
+  | (BaseCheckboxProps & { label: string; 'aria-label'?: string })
+  | (BaseCheckboxProps & { label?: never; 'aria-label': string })
 
 /* =================================================================
    Dimension maps
@@ -65,11 +65,12 @@ export const Checkbox = React.forwardRef<
       defaultChecked,
       onCheckedChange,
       disabled = false,
-      invalid = false,
+      error = false,
       label,
       helperText,
       errorMessage,
       className,
+      'aria-label': ariaLabel,
     },
     ref
   ) => {
@@ -77,7 +78,7 @@ export const Checkbox = React.forwardRef<
     const inputId = id ?? autoId
     const errorId  = `${inputId}-error`
     const helperId = `${inputId}-helper`
-    const hasError  = invalid || !!errorMessage
+    const hasError  = error || !!errorMessage
     const descById  = errorMessage ? errorId : helperText ? helperId : undefined
     const b = BOX[size]
 
@@ -86,8 +87,8 @@ export const Checkbox = React.forwardRef<
 
     return (
       <div className="inline-flex flex-col gap-[var(--spacing-xxs)]">
-        {/* ── Control row ─────────────────────────────────────────── */}
-        <div className="inline-flex items-center gap-[var(--spacing-s)]">
+        {/* ── Control row — min-h-[44px] ensures 44px effective touch target ── */}
+        <div className="inline-flex min-h-[44px] items-center gap-[var(--spacing-s)]">
           <CheckboxPrimitive.Root
             ref={ref}
             id={inputId}
@@ -95,7 +96,9 @@ export const Checkbox = React.forwardRef<
             defaultChecked={defaultChecked}
             onCheckedChange={onCheckedChange}
             disabled={disabled}
+            aria-label={ariaLabel}
             aria-invalid={hasError ? true : undefined}
+            aria-disabled={disabled || undefined}
             aria-describedby={descById}
             className={cn(
               /* Self-contained reset — must not rely on preflight */
@@ -107,20 +110,20 @@ export const Checkbox = React.forwardRef<
               b.border,
               b.size,
               'transition-colors duration-150 cursor-pointer',
-              /* Unchecked base */
-              'border-[var(--border)] bg-transparent',
-              /* Unchecked hover */
-              'hover:border-[var(--foreground)]',
-              /* Checked fill → --selection (#000) */
+              /* Unchecked base — --foreground border ensures ≥3:1 contrast (WCAG 1.4.11) */
+              'border-[var(--foreground)] bg-transparent',
+              /* Unchecked hover — bg tint; border already dark so no border change needed */
+              'hover:bg-[var(--muted)]',
+              /* Checked fill → --selection (#000 light / #FFF dark) */
               'data-[state=checked]:bg-[var(--selection)]',
               'data-[state=checked]:border-[var(--selection)]',
-              'data-[state=checked]:hover:bg-[color-mix(in_srgb,var(--selection)_85%,white)]',
-              'data-[state=checked]:hover:border-[color-mix(in_srgb,var(--selection)_85%,white)]',
+              'data-[state=checked]:hover:bg-[color-mix(in_srgb,var(--selection)_85%,var(--background))]',
+              'data-[state=checked]:hover:border-[color-mix(in_srgb,var(--selection)_85%,var(--background))]',
               /* Indeterminate fill → --selection */
               'data-[state=indeterminate]:bg-[var(--selection)]',
               'data-[state=indeterminate]:border-[var(--selection)]',
-              'data-[state=indeterminate]:hover:bg-[color-mix(in_srgb,var(--selection)_85%,white)]',
-              'data-[state=indeterminate]:hover:border-[color-mix(in_srgb,var(--selection)_85%,white)]',
+              'data-[state=indeterminate]:hover:bg-[color-mix(in_srgb,var(--selection)_85%,var(--background))]',
+              'data-[state=indeterminate]:hover:border-[color-mix(in_srgb,var(--selection)_85%,var(--background))]',
               /* Error — override border with --destructive regardless of state */
               hasError && [
                 'border-[var(--destructive)] hover:border-[var(--destructive)]',
@@ -132,12 +135,15 @@ export const Checkbox = React.forwardRef<
               /* Focus ring — --ring (green) via brand color */
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
               'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+              /* Active press feedback */
+              'active:opacity-80',
               /* Disabled */
               'disabled:cursor-not-allowed disabled:opacity-40 disabled:pointer-events-none',
               className
             )}
           >
-            <CheckboxPrimitive.Indicator className="checkbox-indicator flex items-center justify-center text-white">
+            {/* --selection-foreground adapts per theme: #FFF on black (light), #212121 on white (dark) */}
+            <CheckboxPrimitive.Indicator className="checkbox-indicator flex items-center justify-center text-[var(--selection-foreground)]">
               {isIndeterminate
                 ? <Minus   size={b.icon} strokeWidth={3} aria-hidden />
                 : <Check   size={b.icon} strokeWidth={3} aria-hidden />
@@ -161,12 +167,12 @@ export const Checkbox = React.forwardRef<
 
         {/* ── Below-control messaging ──────────────────────────────── */}
         {errorMessage ? (
-          <div id={errorId} role="alert" className="flex items-center gap-[var(--spacing-xxs)]">
+          <div id={errorId} role="status" className="flex items-center gap-[var(--spacing-xxs)]">
             <AlertCircle size={12} className="text-[var(--destructive)] shrink-0" aria-hidden />
             <span className="body-body2-regular text-[var(--destructive)]">{errorMessage}</span>
           </div>
         ) : helperText ? (
-          <p id={helperId} className="body-body2-regular text-muted-foreground" style={{ margin: 0 }}>
+          <p id={helperId} className="body-body2-regular text-foreground m-0">
             {helperText}
           </p>
         ) : null}
