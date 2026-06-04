@@ -2,18 +2,23 @@ import * as React from 'react'
 import { DatePicker, type DateRange } from '../../components/ui'
 import { ComponentHeader, SectionLabel } from '../helpers'
 
+/*
+ * Label pattern for RAC-based date fields:
+ * Render a <label> with an id, then pass aria-labelledby to DatePicker.
+ * htmlFor on a <label> only works with native form controls; RAC Group is a <div>.
+ */
 function FieldLabel({
-  htmlFor,
+  id,
   children,
   disabled,
 }: {
-  htmlFor: string
+  id: string
   children: React.ReactNode
   disabled?: boolean
 }) {
   return (
     <label
-      htmlFor={htmlFor}
+      id={id}
       className="input-inputlabel"
       style={{ color: disabled ? 'var(--text-disabled)' : 'var(--muted-foreground)' }}
     >
@@ -67,33 +72,30 @@ export function DatePickerSection() {
         }}
       >
         <Field>
-          <FieldLabel htmlFor="dp-empty">Ship date</FieldLabel>
-          <DatePicker id="dp-empty" value={date1} onChange={setDate1} />
+          <FieldLabel id="label-dp-empty">Ship date</FieldLabel>
+          <DatePicker aria-labelledby="label-dp-empty" value={date1} onChange={setDate1} />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-value">Start date</FieldLabel>
-          <DatePicker id="dp-value" value={date2} onChange={setDate2} />
+          <FieldLabel id="label-dp-value">Start date</FieldLabel>
+          <DatePicker aria-labelledby="label-dp-value" value={date2} onChange={setDate2} />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-minmax">Delivery window</FieldLabel>
+          <FieldLabel id="label-dp-minmax">Delivery window</FieldLabel>
           <DatePicker
-            id="dp-minmax"
+            aria-labelledby="label-dp-minmax"
             value={date3}
             onChange={setDate3}
             min={minDate}
             max={maxDate}
-            placeholder="Select within next 60 days"
           />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-disabled" disabled>
-            Locked date
-          </FieldLabel>
+          <FieldLabel id="label-dp-disabled" disabled>Locked date</FieldLabel>
           <DatePicker
-            id="dp-disabled"
+            aria-labelledby="label-dp-disabled"
             value={new Date(2026, 0, 1)}
             onChange={() => {}}
             disabled
@@ -101,9 +103,9 @@ export function DatePickerSection() {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-error">Required date</FieldLabel>
+          <FieldLabel id="label-dp-error">Required date</FieldLabel>
           <DatePicker
-            id="dp-error"
+            aria-labelledby="label-dp-error"
             value={undefined}
             onChange={() => {}}
             error
@@ -123,43 +125,54 @@ export function DatePickerSection() {
         }}
       >
         <Field>
-          <FieldLabel htmlFor="dp-range-empty">Campaign period</FieldLabel>
+          <FieldLabel id="label-dp-range-empty">Campaign period</FieldLabel>
           <DatePicker
             mode="range"
-            id="dp-range-empty"
+            aria-labelledby="label-dp-range-empty"
             value={range1}
             onChange={setRange1}
           />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-range-full">Promotion window</FieldLabel>
+          <FieldLabel id="label-dp-range-full">Promotion window</FieldLabel>
           <DatePicker
             mode="range"
-            id="dp-range-full"
+            aria-labelledby="label-dp-range-full"
             value={range2}
             onChange={setRange2}
           />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-range-partial">Event dates</FieldLabel>
+          <FieldLabel id="label-dp-range-partial">Event dates</FieldLabel>
           <DatePicker
             mode="range"
-            id="dp-range-partial"
+            aria-labelledby="label-dp-range-partial"
             value={range3}
             onChange={setRange3}
           />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-range-error">Required period</FieldLabel>
+          <FieldLabel id="label-dp-range-error">Required period</FieldLabel>
           <DatePicker
             mode="range"
-            id="dp-range-error"
+            aria-labelledby="label-dp-range-error"
             value={undefined}
             onChange={() => {}}
             error
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel id="label-dp-range-disabled" disabled>Locked period</FieldLabel>
+          <DatePicker
+            mode="range"
+            aria-labelledby="label-dp-range-disabled"
+            value={{ from: new Date(2026, 0, 10), to: new Date(2026, 0, 20) }}
+            onChange={() => {}}
+            disabled
           />
         </Field>
       </div>
