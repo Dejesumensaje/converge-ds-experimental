@@ -4,6 +4,8 @@
    Component JSX handles layout (flex, gap) via Tailwind.
    ================================================================= */
 
+@layer components {
+
 /* ── Base ───────────────────────────────────────────────────────── */
 
 .table-base {
@@ -274,3 +276,5 @@
 .cell-trailing {
   flex-shrink: 0;
 }
+
+} /* end @layer components */

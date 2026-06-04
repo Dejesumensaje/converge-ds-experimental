@@ -1,0 +1,29 @@
+/* =================================================================
+   CONVERGE DS — Library CSS entry point
+   Imported by src/index.ts — this is what ships in the npm package.
+   NO preflight. NO bare element selectors.
+   ================================================================= */
+
+/* Layer order declaration — must come first */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./theme.css";
+
+/*
+  DS-wide reduced-motion safety net.
+  !important overrides any layer (including @layer utilities where
+  Tailwind places transition-* / animation-* utilities). 0.01ms keeps
+  transitionend / animationend firing so JS that listens for those
+  events stays intact. Component-level reduced-motion overrides remain
+  harmless and own their own background/opacity reset logic.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

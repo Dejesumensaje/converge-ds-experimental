@@ -21,8 +21,9 @@ export default defineConfig(({ command }) => ({
       })
     ),
   ],
-  ...(isLib ? {
-    build: {
+  build: {
+    outDir: isLib ? 'dist' : 'dist-app',
+    ...(isLib ? {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
         name: 'ConvergeDS',
@@ -39,6 +40,6 @@ export default defineConfig(({ command }) => ({
         },
       },
       cssCodeSplit: false,
-    },
-  } : {}),
+    } : {}),
+  },
 }))

@@ -5,7 +5,7 @@
    (equal selectors, later declaration wins). No cross-layer conflict.
    ================================================================ */
 
-@layer base {
+@layer components {
   .skeleton {
     display: block;
     background: linear-gradient(

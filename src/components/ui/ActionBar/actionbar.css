@@ -12,7 +12,7 @@
    The inline translateX(-50%) is therefore never touched.
    ================================================================ */
 
-@layer base {
+@layer components {
   .action-bar-container {
     /* Glass shell — identical rgba values to Button glass variant */
     background: rgba(255, 255, 255, 0.18);

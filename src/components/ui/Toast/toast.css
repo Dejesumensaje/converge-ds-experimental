@@ -5,7 +5,7 @@
    specificity, later-declaration cascade wins (lesson from ActionBar).
    ================================================================ */
 
-@layer base {
+@layer components {
   /* ── Root: pill shape + elevation ─────────────────────────────── */
   .toast-root {
     box-sizing: border-box;

@@ -283,7 +283,7 @@ export function ToastProvider({ position = 'bottom-right', children }: ToastProv
 
   const contextValue = React.useMemo(() => ({ add, dismiss }), [add, dismiss])
 
-  const swipeDirection: RadixToast.SwipeDirection =
+  const swipeDirection: 'up' | 'down' | 'left' | 'right' =
     position.endsWith('left')
       ? 'left'
       : position.endsWith('right')

@@ -2,7 +2,7 @@
    Checkbox — indicator entrance animation + motion sensitivity
    ================================================================ */
 
-@layer base {
+@layer components {
   .checkbox-indicator {
     animation: checkbox-appear 100ms ease-out;
   }

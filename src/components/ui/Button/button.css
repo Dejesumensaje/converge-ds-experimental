@@ -4,7 +4,7 @@
    still win in the cascade.
    ================================================================= */
 
-@layer base {
+@layer components {
   .btn {
     appearance: none;
     -webkit-appearance: none;
@@ -21,6 +21,7 @@
    ================================================================= */
 
 /* Hover: increase top highlight and blur */
+@layer components {
 .btn-glass:hover {
   backdrop-filter: blur(28px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
@@ -28,4 +29,5 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     inset 0 -1px 0 rgba(0, 0, 0, 0.05),
     0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
 }

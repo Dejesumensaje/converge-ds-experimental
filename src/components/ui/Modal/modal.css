@@ -14,31 +14,33 @@
    is never disturbed.
    ================================================================ */
 
-@keyframes modal-overlay-show {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+@layer components {
+  @keyframes modal-overlay-show {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
 
-@keyframes modal-overlay-hide {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
+  @keyframes modal-overlay-hide {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
 
-@keyframes modal-content-show {
-  from { opacity: 0; scale: 0.97; }
-  to   { opacity: 1; scale: 1; }
-}
+  @keyframes modal-content-show {
+    from { opacity: 0; scale: 0.97; }
+    to   { opacity: 1; scale: 1; }
+  }
 
-@keyframes modal-content-hide {
-  from { opacity: 1; scale: 1; }
-  to   { opacity: 0; scale: 0.97; }
-}
+  @keyframes modal-content-hide {
+    from { opacity: 1; scale: 1; }
+    to   { opacity: 0; scale: 0.97; }
+  }
 
-.modal-overlay[data-state='open']   { animation: modal-overlay-show 180ms cubic-bezier(0.16, 1, 0.3, 1); }
-.modal-overlay[data-state='closed'] { animation: modal-overlay-hide  140ms ease-in; }
+  .modal-overlay[data-state='open']   { animation: modal-overlay-show 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .modal-overlay[data-state='closed'] { animation: modal-overlay-hide  140ms ease-in; }
 
-.modal-content {
-  will-change: opacity, scale;
+  .modal-content {
+    will-change: opacity, scale;
+  }
+  .modal-content[data-state='open']   { animation: modal-content-show 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .modal-content[data-state='closed'] { animation: modal-content-hide  160ms ease-in; }
 }
-.modal-content[data-state='open']   { animation: modal-content-show 220ms cubic-bezier(0.16, 1, 0.3, 1); }
-.modal-content[data-state='closed'] { animation: modal-content-hide  160ms ease-in; }
