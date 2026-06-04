@@ -1,0 +1,63 @@
+/*
+ * Breadcrumb — self-contained styles (§3.6).
+ * No bare element selectors. All scoped under .breadcrumb-* classes.
+ */
+
+/* Root nav reset */
+.breadcrumb-root {
+  box-sizing: border-box;
+}
+
+/* ol reset */
+.breadcrumb-list {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xxs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each breadcrumb slot */
+.breadcrumb-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/* Separator slot */
+.breadcrumb-sep {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/*
+ * Interactive element reset — applied to both <a> and <button> breadcrumb items
+ * to neutralise browser chrome that would leak if no global reset is present (§3.6).
+ */
+.breadcrumb-interactive {
+  /* button reset */
+  appearance: none;
+  background: transparent;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  /* shared */
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* <a> reset: ensure no underline in bare environments */
+.breadcrumb-link {
+  text-decoration: none;
+}
+.breadcrumb-link:hover {
+  text-decoration: none;
+}

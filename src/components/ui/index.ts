@@ -47,6 +47,7 @@ export {
   type ToastProviderProps,
   type UseToastReturn,
 } from './Toast'
+export { Breadcrumb, type BreadcrumbProps, type BreadcrumbItem } from './Breadcrumb'
 export {
   Table, type TableProps,
   TableHeader,

@@ -32,6 +32,7 @@ import { TabsSection } from './sections/TabsSection'
 import { HeaderSection } from './sections/HeaderSection'
 import { SidebarSection } from './sections/SidebarSection'
 import { FooterSection } from './sections/FooterSection'
+import { BreadcrumbSection } from './sections/BreadcrumbSection'
 
 export type SectionEntry = {
   group: string
@@ -74,4 +75,5 @@ export const SECTION_REGISTRY: SectionEntry[] = [
   { group: 'layout',      id: 'header',            label: 'Header',          Component: HeaderSection },
   { group: 'layout',      id: 'sidebar',           label: 'Sidebar',         Component: SidebarSection },
   { group: 'layout',      id: 'footer',            label: 'Footer',          Component: FooterSection },
+  { group: 'layout',      id: 'breadcrumb',        label: 'Breadcrumb',      Component: BreadcrumbSection },
 ]
