@@ -155,7 +155,7 @@ export const RadioGroupItem = React.forwardRef<
     const d = CIRCLE[size]
 
     return (
-      <div className={cn('flex items-start gap-[var(--spacing-s)]', className)}>
+      <div className={cn('flex items-center gap-[var(--spacing-s)]', className)}>
         <RadioGroupPrimitive.Item
           ref={ref}
           id={itemId}
@@ -169,8 +169,6 @@ export const RadioGroupItem = React.forwardRef<
             d.circle,
             d.border,
             'transition-colors duration-150 cursor-pointer',
-            /* Optical alignment with first line of label */
-            'mt-[var(--spacing-tiny)]',
             /* Unselected base */
             'border-[var(--border)] bg-transparent',
             'hover:border-[var(--foreground)]',
