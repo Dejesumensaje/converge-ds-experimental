@@ -2,7 +2,6 @@ import * as React from 'react'
 import { DatePicker, type DateRange } from '../../components/ui'
 import { ComponentHeader, SectionLabel } from '../helpers'
 
-/* ── Shared label wrapper ────────────────────────────────────────── */
 function FieldLabel({
   htmlFor,
   children,
@@ -32,17 +31,16 @@ function Field({ children }: { children: React.ReactNode }) {
 }
 
 export function DatePickerSection() {
-  /* ── Single mode state ───────────────────────────────────────── */
+  /* ── Single ─────────────────────────────────────────────────── */
   const [date1, setDate1] = React.useState<Date | undefined>(undefined)
   const [date2, setDate2] = React.useState<Date | undefined>(new Date(2026, 5, 15))
 
   const today = new Date()
   const minDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const maxDate = new Date(today.getFullYear(), today.getMonth() + 2, 0)
-
   const [date3, setDate3] = React.useState<Date | undefined>(undefined)
 
-  /* ── Range mode state ────────────────────────────────────────── */
+  /* ── Range ──────────────────────────────────────────────────── */
   const [range1, setRange1] = React.useState<DateRange | undefined>(undefined)
   const [range2, setRange2] = React.useState<DateRange | undefined>({
     from: new Date(2026, 5, 8),
@@ -57,9 +55,17 @@ export function DatePickerSection() {
     <section style={{ marginBottom: 'var(--spacing-jumbo)' }}>
       <ComponentHeader id="datepicker" title="DatePicker" />
 
-      {/* ── Single ──────────────────────────────────────────────── */}
+      {/* ── Single ────────────────────────────────────────────── */}
       <SectionLabel>Single</SectionLabel>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)', maxWidth: 320, marginBottom: 'var(--spacing-jumbo)' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--spacing-xl)',
+          maxWidth: 320,
+          marginBottom: 'var(--spacing-jumbo)',
+        }}
+      >
         <Field>
           <FieldLabel htmlFor="dp-empty">Ship date</FieldLabel>
           <DatePicker id="dp-empty" value={date1} onChange={setDate1} />
@@ -83,7 +89,9 @@ export function DatePickerSection() {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="dp-disabled" disabled>Locked date</FieldLabel>
+          <FieldLabel htmlFor="dp-disabled" disabled>
+            Locked date
+          </FieldLabel>
           <DatePicker
             id="dp-disabled"
             value={new Date(2026, 0, 1)}
@@ -91,12 +99,29 @@ export function DatePickerSection() {
             disabled
           />
         </Field>
+
+        <Field>
+          <FieldLabel htmlFor="dp-error">Required date</FieldLabel>
+          <DatePicker
+            id="dp-error"
+            value={undefined}
+            onChange={() => {}}
+            error
+          />
+        </Field>
       </div>
 
-      {/* ── Range ───────────────────────────────────────────────── */}
+      {/* ── Range ─────────────────────────────────────────────── */}
       <SectionLabel>Range</SectionLabel>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)', maxWidth: 600, marginBottom: 'var(--spacing-jumbo)' }}>
-        {/* Empty — shows placeholder */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--spacing-xl)',
+          maxWidth: 560,
+          marginBottom: 'var(--spacing-jumbo)',
+        }}
+      >
         <Field>
           <FieldLabel htmlFor="dp-range-empty">Campaign period</FieldLabel>
           <DatePicker
@@ -107,7 +132,6 @@ export function DatePickerSection() {
           />
         </Field>
 
-        {/* Full range — from + to */}
         <Field>
           <FieldLabel htmlFor="dp-range-full">Promotion window</FieldLabel>
           <DatePicker
@@ -118,7 +142,6 @@ export function DatePickerSection() {
           />
         </Field>
 
-        {/* Partial — only from, no to yet */}
         <Field>
           <FieldLabel htmlFor="dp-range-partial">Event dates</FieldLabel>
           <DatePicker
@@ -126,6 +149,17 @@ export function DatePickerSection() {
             id="dp-range-partial"
             value={range3}
             onChange={setRange3}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="dp-range-error">Required period</FieldLabel>
+          <DatePicker
+            mode="range"
+            id="dp-range-error"
+            value={undefined}
+            onChange={() => {}}
+            error
           />
         </Field>
       </div>

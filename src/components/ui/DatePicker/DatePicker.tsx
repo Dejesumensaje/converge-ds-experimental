@@ -1,36 +1,59 @@
 import * as React from 'react'
-import * as Popover from '@radix-ui/react-popover'
-import { DayPicker, type Matcher, type DateRange } from 'react-day-picker'
-import { format as dateFnsFormat, isSameDay } from 'date-fns'
-import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import {
+  DatePicker as RACDatePicker,
+  DateRangePicker,
+  DateInput,
+  DateSegment,
+  Button,
+  Calendar,
+  RangeCalendar,
+  CalendarGrid,
+  CalendarGridHeader,
+  CalendarHeaderCell,
+  CalendarGridBody,
+  CalendarCell,
+  Heading,
+  Popover,
+  Dialog,
+  Group,
+  I18nProvider,
+} from 'react-aria-components'
+import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date'
+import { Calendar as CalIcon, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { cn } from '../../../lib/utils'
+import './datepicker.css'
 
-/* =================================================================
-   Public types — re-export DateRange so consumers skip rdp import
-   ================================================================= */
+/* ─────────────────────────────────────────────────────────────────
+   Public types
+   ───────────────────────────────────────────────────────────────── */
 
-export type { DateRange }
+export type DateRange = { from?: Date; to?: Date }
 
-type DatePickerBaseProps = {
+type DatePickerBase = {
   disabled?: boolean
   min?: Date
   max?: Date
+  /** id forwarded to the Group element */
   id?: string
+  /** hidden input name (single mode) */
   name?: string
-  /** date-fns format string. Default: "MMM d, yyyy" → "Jun 4, 2026" */
-  format?: string
-  /** className applied to the outer wrapper div */
   className?: string
   placeholder?: string
+  error?: boolean
+  /**
+   * BCP 47 locale tag for date formatting and calendar.
+   * Defaults to "en-US" (MM/DD/YYYY, week starts Sunday, English month names).
+   */
+  locale?: string
 }
 
-type DatePickerSingleProps = DatePickerBaseProps & {
+type DatePickerSingleProps = DatePickerBase & {
   mode?: 'single'
   value?: Date
   onChange?: (date: Date | undefined) => void
 }
 
-type DatePickerRangeProps = DatePickerBaseProps & {
+type DatePickerRangeProps = DatePickerBase & {
   mode: 'range'
   value?: DateRange
   onChange?: (range: DateRange | undefined) => void
@@ -38,417 +61,590 @@ type DatePickerRangeProps = DatePickerBaseProps & {
 
 export type DatePickerProps = DatePickerSingleProps | DatePickerRangeProps
 
-/* =================================================================
-   Responsive hook — collapses to 1 month below breakpoint
-   ================================================================= */
+/* ─────────────────────────────────────────────────────────────────
+   Date conversion (JS Date ↔ CalendarDate)
+   ───────────────────────────────────────────────────────────────── */
 
-const RANGE_BREAKPOINT = 640 // px
+function jsToCalDate(d: Date): CalendarDate {
+  return new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate())
+}
 
-function useIsNarrow(bp = RANGE_BREAKPOINT): boolean {
-  const getMatch = () =>
-    typeof window !== 'undefined' && window.innerWidth < bp
-  const [narrow, setNarrow] = React.useState(getMatch)
+function calToJsDate(cd: CalendarDate): Date {
+  return new Date(cd.year, cd.month - 1, cd.day)
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Responsive hook — collapses to 1 month below 640px
+   ───────────────────────────────────────────────────────────────── */
+
+function useIsNarrow(bp = 640): boolean {
+  const [narrow, setNarrow] = React.useState(
+    () => typeof window !== 'undefined' && window.innerWidth < bp,
+  )
   React.useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${bp - 1}px)`)
     setNarrow(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setNarrow(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
+    const h = (e: MediaQueryListEvent) => setNarrow(e.matches)
+    mq.addEventListener('change', h)
+    return () => mq.removeEventListener('change', h)
   }, [bp])
   return narrow
 }
 
-/* =================================================================
-   Day-button class factory — size adapts for touch targets
-   =================================================================
-   Desktop: 32×32px (w-8 h-8)
-   Touch/narrow: 44×44px (w-11 h-11) — WCAG 2.2 SC 2.5.8
-   ================================================================= */
-
-function makeDayBtnClass(isNarrow: boolean): string {
-  const sz = isNarrow ? 'w-11 h-11' : 'w-8 h-8'
-  return cn(
-    /* reset */
-    'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
-    /* layout */
-    sz, 'rounded-full flex items-center justify-center',
-    /* typography */
-    'body-body2-regular text-foreground',
-    /* interaction */
-    'cursor-pointer hover:bg-muted transition-colors duration-100',
-    /* focus ring — --primary (green), allowed §3.5 */
-    'outline-none focus-visible:ring-2',
-    'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
-
-    /* ── selected / range endpoints ──────────────────────────── */
-    'group-data-[selected=true]:bg-[var(--selection)]',
-    'group-data-[selected=true]:text-[var(--selection-foreground)]',
-    'group-data-[selected=true]:hover:bg-[var(--selection)]',
-
-    /* ── today — subtle ring, never green ────────────────────── */
-    'group-data-[today=true]:ring-1',
-    'group-data-[today=true]:ring-[var(--neutral-gray3)]',
-    'group-data-[today=true]:ring-offset-1',
-    'group-data-[today=true]:ring-offset-background',
-
-    /* ── outside month ───────────────────────────────────────── */
-    'group-data-[outside=true]:opacity-30',
-
-    /* ── disabled ────────────────────────────────────────────── */
-    'group-data-[disabled=true]:opacity-30',
-    'group-data-[disabled=true]:cursor-not-allowed',
-    'group-data-[disabled=true]:pointer-events-none',
-
-    /* ── range middle — cell carries the tint ────────────────── */
-    'group-[.is-range-middle]:bg-transparent',
-    'group-[.is-range-middle]:hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
-
-    /* ── hover preview middle ────────────────────────────────── */
-    'group-[.is-preview-middle]:bg-transparent',
-    'group-[.is-preview-middle]:hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
-
-    /* ── hover preview endpoint (lighter than actual selection) ─ */
-    'group-[.is-preview-end]:bg-[color-mix(in_srgb,var(--selection)_20%,transparent)]',
-    'group-[.is-preview-end]:text-foreground',
-    'group-[.is-preview-end]:hover:bg-[color-mix(in_srgb,var(--selection)_30%,transparent)]',
-  )
-}
+/* ─────────────────────────────────────────────────────────────────
+   Shared style constants
+   ───────────────────────────────────────────────────────────────── */
 
 const NAV_BTN = cn(
   'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
   'w-8 h-8 rounded-[var(--radius-m)] flex items-center justify-center',
   'text-muted-foreground hover:text-foreground hover:bg-muted',
   'cursor-pointer transition-colors duration-100',
-  'outline-none focus-visible:ring-2',
+  'outline-none',
+  'focus-visible:ring-2',
   'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
 )
 
-/* =================================================================
-   Helpers
-   ================================================================= */
+const CALENDAR_ICON_BTN = cn(
+  'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
+  'flex-shrink-0 w-8 h-8 rounded-[var(--radius-m)]',
+  'flex items-center justify-center',
+  'text-muted-foreground hover:text-foreground hover:bg-muted',
+  'cursor-pointer transition-colors duration-100',
+  'outline-none',
+  'focus-visible:ring-2',
+  'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+)
 
-function formatSingle(date: Date, fmt: string): string {
-  return dateFnsFormat(date, fmt)
+const CLEAR_BTN = cn(
+  'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
+  'flex-shrink-0 w-6 h-6 rounded-[var(--radius-m)]',
+  'flex items-center justify-center',
+  'text-muted-foreground hover:text-foreground hover:bg-muted',
+  'cursor-pointer transition-colors duration-100 mr-[var(--spacing-xxs)]',
+  'outline-none',
+  'focus-visible:ring-2',
+  'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+)
+
+/* ─────────────────────────────────────────────────────────────────
+   CalendarCell class factory
+   ───────────────────────────────────────────────────────────────── */
+
+type CellRenderState = {
+  isSelected: boolean
+  isSelectionStart: boolean
+  isSelectionEnd: boolean
+  isFocusVisible: boolean
+  isDisabled: boolean
+  isOutsideMonth: boolean
+  date: CalendarDate
 }
 
-function formatRangeTrigger(
-  range: DateRange | undefined,
-  fmt: string,
-  placeholder: string,
-): string {
-  if (!range?.from) return placeholder
-  if (!range.to) return dateFnsFormat(range.from, fmt)
-  return `${dateFnsFormat(range.from, 'MMM d')} – ${dateFnsFormat(range.to, fmt)}`
+function makeCellClass(
+  isNarrow: boolean,
+  todayDate: CalendarDate,
+): (state: CellRenderState) => string {
+  const sz = isNarrow ? 'w-11 h-11' : 'w-8 h-8'
+  return ({
+    isSelected,
+    isSelectionStart,
+    isSelectionEnd,
+    isFocusVisible,
+    isDisabled,
+    isOutsideMonth,
+    date,
+  }) => {
+    const isToday = date.compare(todayDate) === 0
+    const isEndpoint = isSelectionStart || isSelectionEnd
+    const isMiddle = isSelected && !isEndpoint
+
+    return cn(
+      /* reset */
+      'appearance-none border-0 m-0 box-border [font:inherit]',
+      /* layout */
+      sz, 'rounded-full flex items-center justify-center cursor-pointer',
+      /* typography */
+      'body-body2-regular text-foreground outline-none',
+      /* transitions */
+      'transition-colors duration-100',
+      /* focus ring */
+      isFocusVisible &&
+        'ring-2 ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+      /* today indicator (ring, never green) */
+      isToday && !isSelected &&
+        'ring-1 ring-[var(--neutral-gray3)] ring-offset-1 ring-offset-background',
+      /* outside month — faded */
+      isOutsideMonth && 'opacity-30',
+      /* disabled */
+      isDisabled && 'opacity-30 cursor-not-allowed pointer-events-none',
+      /* hover (non-selected) */
+      !isSelected && !isDisabled && 'hover:bg-muted',
+      /* selected endpoints */
+      isEndpoint &&
+        'bg-[var(--selection)] text-[var(--selection-foreground)] hover:bg-[var(--selection)]',
+      /* range middle — transparent; <td> carries the tint via CSS */
+      isMiddle && 'bg-transparent',
+    )
+  }
 }
 
-/* =================================================================
-   Component
-   ================================================================= */
+/* ─────────────────────────────────────────────────────────────────
+   Group class factory — the trigger field ring
+   ───────────────────────────────────────────────────────────────── */
 
-export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
+type GroupRenderState = {
+  isFocusWithin: boolean
+  isHovered: boolean
+  isDisabled: boolean
+}
+
+function groupClass(
+  open: boolean,
+  hasValue: boolean,
+  error: boolean,
+  disabled: boolean,
+  compact = false,
+) {
+  return ({ isFocusWithin, isHovered }: GroupRenderState) =>
+    cn(
+      /* base */
+      'relative items-center',
+      compact ? 'inline-flex' : 'flex w-full',
+      'h-12 rounded-[var(--radius-m)]',
+      'bg-[var(--input-background)]',
+      'appearance-none box-border',
+      'cursor-text transition-shadow duration-150',
+      /* ring */
+      open || isFocusWithin
+        ? 'ring-2 ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]'
+        : error
+        ? 'ring-1 ring-[var(--destructive)]'
+        : isHovered || hasValue
+        ? 'ring-1 ring-[var(--neutral-dark)]'
+        : 'ring-1 ring-[var(--neutral-gray4)]',
+      /* disabled */
+      disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
+    )
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   CalendarPanel — shared between single and range
+   ───────────────────────────────────────────────────────────────── */
+
+interface CalendarPanelProps {
+  mode: 'single' | 'range'
+  isNarrow: boolean
+}
+
+function CalendarPanel({ mode, isNarrow }: CalendarPanelProps) {
+  const todayDate = today(getLocalTimeZone())
+  const cellClass = React.useMemo(
+    () => makeCellClass(isNarrow, todayDate),
+    [isNarrow, todayDate],
+  )
+  const numMonths = mode === 'range' && !isNarrow ? 2 : 1
+
+  const headerRow = (
+    <div
+      className={cn(
+        'flex items-center justify-between',
+        'mb-[var(--spacing-s)]',
+      )}
+    >
+      <Button slot="previous" className={NAV_BTN}>
+        <ChevronLeft size={16} aria-hidden="true" />
+      </Button>
+      <Heading className="body-body1-semibold text-foreground" />
+      <Button slot="next" className={NAV_BTN}>
+        <ChevronRight size={16} aria-hidden="true" />
+      </Button>
+    </div>
+  )
+
+  const weekdaySz = isNarrow ? 'w-11 h-11' : 'w-8 h-8'
+
+  const gridContent = (offset?: { months: number }) => (
+    <CalendarGrid
+      offset={offset}
+      className={cn(
+        'border-collapse',
+        mode === 'range' && 'dp-range-grid',
+      )}
+    >
+      <CalendarGridHeader>
+        {(day) => (
+          <CalendarHeaderCell
+            className={cn(
+              weekdaySz,
+              'caption-caption text-muted-foreground font-normal text-center',
+            )}
+          >
+            {day}
+          </CalendarHeaderCell>
+        )}
+      </CalendarGridHeader>
+      <CalendarGridBody>
+        {(date) => (
+          <CalendarCell
+            date={date}
+            className={cellClass}
+          />
+        )}
+      </CalendarGridBody>
+    </CalendarGrid>
+  )
+
+  const grids = (
+    <div
+      className={cn(
+        'flex',
+        numMonths > 1 && 'gap-[var(--spacing-xl)]',
+      )}
+    >
+      {gridContent()}
+      {numMonths > 1 && gridContent({ months: 1 })}
+    </div>
+  )
+
+  return (
+    <div
+      className={cn(
+        'bg-background border border-border rounded-[var(--radius-l)] shadow-md',
+        'p-[var(--spacing-m)] outline-none',
+      )}
+    >
+      {mode === 'single' ? (
+        <Calendar
+          className="outline-none"
+        >
+          {headerRow}
+          {grids}
+        </Calendar>
+      ) : (
+        <RangeCalendar
+          className="outline-none"
+          visibleDuration={{ months: numMonths }}
+        >
+          {headerRow}
+          {grids}
+        </RangeCalendar>
+      )}
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Shared segment + input styles
+   ───────────────────────────────────────────────────────────────── */
+
+const SEGMENT_CLASS = cn(
+  'dp-segment body-body1-regular outline-none',
+  'rounded-[var(--radius-xs)] px-[2px] tabular-nums',
+  /* placeholder handled via CSS .dp-segment[data-placeholder] */
+  /* focus handled via CSS .dp-segment[data-focused] */
+)
+
+const DATE_INPUT_CLASS = cn(
+  'flex items-center h-full pl-[var(--spacing-l)]',
+  'body-body1-regular cursor-text',
+)
+
+/* ─────────────────────────────────────────────────────────────────
+   SingleDatePicker
+   ───────────────────────────────────────────────────────────────── */
+
+interface SinglePickerProps {
+  value?: Date
+  onChange?: (date: Date | undefined) => void
+  disabled: boolean
+  min?: Date
+  max?: Date
+  id?: string
+  name?: string
+  className?: string
+  placeholder?: string
+  error: boolean
+  locale: string
+}
+
+function SingleDatePicker({
+  value,
+  onChange,
+  disabled,
+  min,
+  max,
+  id,
+  name,
+  className,
+  error,
+  locale,
+}: SinglePickerProps) {
+  const [open, setOpen] = React.useState(false)
+  const isNarrow = useIsNarrow()
+  const hasValue = Boolean(value)
+
+  const calValue = value ? jsToCalDate(value) : null
+  const minValue = min ? jsToCalDate(min) : undefined
+  const maxValue = max ? jsToCalDate(max) : undefined
+
+  const handleClear = () => onChange?.(undefined)
+
+  return (
+    <I18nProvider locale={locale}>
+    <RACDatePicker
+      value={calValue}
+      onChange={(v) => {
+        if (!v) { onChange?.(undefined); return }
+        onChange?.(calToJsDate(v as CalendarDate))
+        setOpen(false)
+      }}
+      isDisabled={disabled}
+      minValue={minValue}
+      maxValue={maxValue}
+      isOpen={open}
+      onOpenChange={setOpen}
+      className={cn('w-full', className)}
+    >
+      <Group
+        id={id}
+        className={groupClass(open, hasValue, error, disabled)}
+      >
+        <DateInput className={DATE_INPUT_CLASS}>
+          {(segment) => (
+            <DateSegment segment={segment} className={SEGMENT_CLASS} />
+          )}
+        </DateInput>
+
+        {/* Right slot */}
+        <div className="flex items-center flex-shrink-0 pr-[var(--spacing-s)]">
+          {hasValue && !disabled && (
+            <button
+              type="button"
+              aria-label="Clear date"
+              tabIndex={-1}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleClear()
+              }}
+              className={CLEAR_BTN}
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
+          <Button className={CALENDAR_ICON_BTN}>
+            <CalIcon size={18} aria-hidden="true" />
+          </Button>
+        </div>
+      </Group>
+
+      <Popover
+        placement="bottom start"
+        offset={4}
+        className="z-50 outline-none"
+      >
+        <Dialog className="outline-none">
+          <CalendarPanel mode="single" isNarrow={isNarrow} />
+        </Dialog>
+      </Popover>
+
+      {/* Hidden form input */}
+      {name && value && (
+        <input
+          type="hidden"
+          name={name}
+          value={`${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`}
+        />
+      )}
+    </RACDatePicker>
+    </I18nProvider>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   RangeDatePicker
+   ───────────────────────────────────────────────────────────────── */
+
+interface RangePickerProps {
+  value?: DateRange
+  onChange?: (range: DateRange | undefined) => void
+  disabled: boolean
+  min?: Date
+  max?: Date
+  id?: string
+  className?: string
+  placeholder?: string
+  error: boolean
+  locale: string
+}
+
+function RangeDatePicker({
+  value,
+  onChange,
+  disabled,
+  min,
+  max,
+  id,
+  className,
+  error,
+  locale,
+}: RangePickerProps) {
+  const [open, setOpen] = React.useState(false)
+  const isNarrow = useIsNarrow()
+  const hasValue = Boolean(value?.from)
+
+  const calValue =
+    value?.from
+      ? {
+          start: jsToCalDate(value.from),
+          end: value.to ? jsToCalDate(value.to) : jsToCalDate(value.from),
+        }
+      : null
+
+  const minValue = min ? jsToCalDate(min) : undefined
+  const maxValue = max ? jsToCalDate(max) : undefined
+
+  const handleClear = () => onChange?.(undefined)
+
+  return (
+    <I18nProvider locale={locale}>
+    <DateRangePicker
+      value={calValue}
+      onChange={(v) => {
+        if (!v) { onChange?.(undefined); return }
+        const from = calToJsDate(v.start as CalendarDate)
+        const to = calToJsDate(v.end as CalendarDate)
+        onChange?.({ from, to })
+        setOpen(false)
+      }}
+      isDisabled={disabled}
+      minValue={minValue}
+      maxValue={maxValue}
+      isOpen={open}
+      onOpenChange={setOpen}
+      className={cn(className)}
+    >
+      <Group
+        id={id}
+        className={groupClass(open, hasValue, error, disabled, true)}
+      >
+        <div className="flex shrink-0 items-center h-full pl-[var(--spacing-l)]">
+          <DateInput slot="start" className="flex items-center body-body1-regular cursor-text">
+            {(segment) => (
+              <DateSegment segment={segment} className={SEGMENT_CLASS} />
+            )}
+          </DateInput>
+          <span
+            aria-hidden="true"
+            className="body-body1-regular text-muted-foreground select-none mx-[var(--spacing-xxs)]"
+          >
+            –
+          </span>
+          <DateInput slot="end" className="flex items-center body-body1-regular cursor-text">
+            {(segment) => (
+              <DateSegment segment={segment} className={SEGMENT_CLASS} />
+            )}
+          </DateInput>
+        </div>
+
+        {/* Right slot */}
+        <div className="flex items-center flex-shrink-0 pr-[var(--spacing-s)]">
+          {hasValue && !disabled && (
+            <button
+              type="button"
+              aria-label="Clear dates"
+              tabIndex={-1}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleClear()
+              }}
+              className={CLEAR_BTN}
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
+          <Button className={CALENDAR_ICON_BTN}>
+            <CalIcon size={18} aria-hidden="true" />
+          </Button>
+        </div>
+      </Group>
+
+      <Popover
+        placement="bottom start"
+        offset={4}
+        className="z-50 outline-none"
+      >
+        <Dialog className="outline-none">
+          <CalendarPanel mode="range" isNarrow={isNarrow} />
+        </Dialog>
+      </Popover>
+    </DateRangePicker>
+    </I18nProvider>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   DatePicker — public export
+   ───────────────────────────────────────────────────────────────── */
+
+export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
   (props, ref) => {
     const {
       disabled = false,
       min,
       max,
-      id: idProp,
+      id,
       name,
-      format = 'MMM d, yyyy',
       className,
+      placeholder,
+      error = false,
+      locale = 'en-US',
     } = props
 
     const isRange = props.mode === 'range'
-    const placeholder = props.placeholder ?? (isRange ? 'Select dates' : 'Select a date')
-
-    const autoId = React.useId()
-    const triggerId = idProp ?? autoId
-
-    const [open, setOpen] = React.useState(false)
-    const [hovered, setHovered] = React.useState(false)
-
-    /*
-     * Hover preview (range mode only).
-     * Tracks which day the cursor is over while `from` is set but `to` is not.
-     */
-    const [hoverDay, setHoverDay] = React.useState<Date | undefined>(undefined)
-
-    /* Collapse to 1 month on narrow viewport */
-    const isNarrow = useIsNarrow()
-    const numMonths = isRange && !isNarrow ? 2 : 1
-
-    /* Day button class — size adapts to viewport */
-    const DAY_BTN = React.useMemo(() => makeDayBtnClass(isNarrow), [isNarrow])
-
-    /* ── Derived values ─────────────────────────────────────────── */
-    const rangeValue = isRange ? (props as DatePickerRangeProps).value : undefined
-    const singleValue = !isRange ? (props as DatePickerSingleProps).value : undefined
-
-    const hasValue = isRange
-      ? Boolean(rangeValue?.from)
-      : Boolean(singleValue)
-
-    const triggerLabel = isRange
-      ? formatRangeTrigger(rangeValue, format, placeholder)
-      : hasValue
-      ? formatSingle(singleValue!, format)
-      : placeholder
-
-    /* ── Preview range (range mode, from set, no to, cursor moving) */
-    const previewRange = React.useMemo<DateRange | null>(() => {
-      if (!isRange || !hoverDay || !rangeValue?.from || rangeValue?.to) return null
-      const from = rangeValue.from!
-      if (isSameDay(hoverDay, from)) return null
-      return from <= hoverDay
-        ? { from, to: hoverDay }
-        : { from: hoverDay, to: from }
-    }, [isRange, hoverDay, rangeValue?.from, rangeValue?.to])
-
-    /* ── Ring ────────────────────────────────────────────────────── */
-    const getRingClass = () => {
-      if (disabled) return 'ring-1 ring-[var(--neutral-gray3)]'
-      if (open) return 'ring-2 ring-selection'
-      if (hovered || hasValue) return 'ring-1 ring-[var(--neutral-dark)]'
-      return 'ring-1 ring-[var(--neutral-gray4)]'
-    }
-
-    /* ── Disabled matchers ──────────────────────────────────────── */
-    const disabledMatchers: Matcher[] = [
-      ...(min ? [{ before: min }] : []),
-      ...(max ? [{ after: max }] : []),
-    ]
-
-    /* ── Clear ──────────────────────────────────────────────────── */
-    const handleClear = () => {
-      if (isRange) {
-        ;(props as DatePickerRangeProps).onChange?.(undefined)
-      } else {
-        ;(props as DatePickerSingleProps).onChange?.(undefined)
-      }
-    }
-
-    /* ── classNames (memoized, depends on isNarrow + numMonths) ─── */
-    const weekdaySz = isNarrow ? 'w-11 h-11' : 'w-8 h-8'
-    const dpClassNames = React.useMemo(() => ({
-      root: '',
-      months: cn('relative', isRange && numMonths > 1 && 'flex gap-[var(--spacing-xl)]'),
-      /*
-       * Nav: absolutely positioned, spans the full width of the months
-       * container (1 or 2 months). Months use pt-10 to clear it.
-       */
-      nav: 'absolute top-0 inset-x-0 z-10 flex items-center justify-between',
-      button_previous: NAV_BTN,
-      button_next: NAV_BTN,
-      month: cn('pt-10', isRange && numMonths > 1 && 'flex-1'),
-      month_caption: 'text-center mb-[var(--spacing-s)]',
-      caption_label: 'body-body1-semibold text-foreground',
-      month_grid: 'w-full border-collapse',
-      weekdays: '',
-      weekday: cn(weekdaySz, 'text-center caption-caption text-muted-foreground font-normal'),
-      weeks: '',
-      week: '',
-      /* "group" on <td> enables group-data-[*]: and group-[.class]: on DayButton */
-      day: cn('group text-center', isNarrow ? 'p-[1px]' : 'p-[2px]'),
-      day_button: DAY_BTN,
-      /* Modifier class names on <td> */
-      selected: '',
-      today: '',
-      outside: '',
-      disabled: '',
-      hidden: 'invisible',
-      focused: '',
-      range_start: '',
-      range_end: '',
-      range_middle: 'is-range-middle bg-[color-mix(in_srgb,var(--selection)_10%,transparent)]',
-      /* Animation (unused) */
-      weeks_before_enter: '',
-      weeks_before_exit: '',
-      weeks_after_enter: '',
-      weeks_after_exit: '',
-      caption_after_enter: '',
-      caption_after_exit: '',
-      caption_before_enter: '',
-      caption_before_exit: '',
-    }), [DAY_BTN, isRange, isNarrow, numMonths, weekdaySz])
-
-    /* ── Preview modifiers passed to DayPicker ──────────────────── */
-    const previewModifiers: Record<string, Matcher> | undefined = previewRange
-      ? {
-          preview_end: previewRange.to!,
-          preview_middle: {
-            after: previewRange.from!,
-            before: previewRange.to!,
-          } as Matcher,
-        }
-      : undefined
-
-    const previewModifiersClassNames = previewRange
-      ? {
-          preview_end: 'is-preview-end',
-          preview_middle:
-            'is-preview-middle bg-[color-mix(in_srgb,var(--selection)_8%,transparent)]',
-        }
-      : undefined
-
-    /* ── Shared DayPicker props ──────────────────────────────────── */
-    const sharedDPProps = {
-      disabled: disabledMatchers.length > 0 ? disabledMatchers : undefined,
-      components: {
-        Chevron: ({ orientation }: { orientation?: string }) =>
-          orientation === 'left'
-            ? <ChevronLeft size={16} aria-hidden="true" />
-            : <ChevronRight size={16} aria-hidden="true" />,
-      },
-      classNames: dpClassNames,
-    }
 
     return (
-      <div className={cn('inline-block w-full', className)}>
-        <Popover.Root
-          open={open}
-          onOpenChange={(o) => {
-            if (!disabled) {
-              setOpen(o)
-              if (!o) setHoverDay(undefined)
-            }
-          }}
-        >
-          {/* ── Trigger ──────────────────────────────────────────── */}
-          <Popover.Trigger asChild>
-            <button
-              ref={ref}
-              type="button"
-              id={triggerId}
-              aria-haspopup="dialog"
-              aria-expanded={open}
-              aria-disabled={disabled || undefined}
-              disabled={disabled}
-              onMouseEnter={() => !disabled && setHovered(true)}
-              onMouseLeave={() => setHovered(false)}
-              className={cn(
-                'relative h-12 w-full rounded-[var(--radius-m)] transition-all duration-150',
-                'appearance-none border-0 m-0 box-border [font:inherit]',
-                'bg-[var(--input-background)]',
-                getRingClass(),
-                'flex items-center text-left cursor-pointer',
-                'pl-[var(--spacing-l)] pr-[44px]',
-                disabled && 'opacity-40 cursor-not-allowed',
-              )}
-            >
-              <span
-                className={cn(
-                  'body-body1-regular flex-1 truncate',
-                  hasValue ? 'text-foreground' : 'text-[var(--muted-foreground)]',
-                )}
-              >
-                {triggerLabel}
-              </span>
-
-              {/*
-               * Right slot: X when has value (clear), Calendar icon when empty.
-               * Matches the SearchInput clear-button pattern.
-               */}
-              {hasValue && !disabled ? (
-                <button
-                  type="button"
-                  aria-label="Clear"
-                  tabIndex={-1}
-                  onMouseDown={(e) => {
-                    e.preventDefault()   // keep popover from toggling
-                    e.stopPropagation()
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleClear()
-                  }}
-                  className={cn(
-                    'absolute flex items-center justify-center',
-                    'w-6 h-6 rounded-[var(--radius-m)]',
-                    'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
-                    'text-muted-foreground hover:text-foreground hover:bg-muted',
-                    'cursor-pointer transition-colors duration-100',
-                    'outline-none focus-visible:ring-2 focus-visible:ring-inset',
-                    'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
-                  )}
-                  style={{ right: 'var(--spacing-l)' }}
-                >
-                  <X size={14} aria-hidden="true" />
-                </button>
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="absolute pointer-events-none"
-                  style={{
-                    right: 'var(--spacing-l)',
-                    color: disabled ? 'var(--text-disabled)' : 'var(--muted-foreground)',
-                  }}
-                >
-                  <Calendar size={20} />
-                </span>
-              )}
-            </button>
-          </Popover.Trigger>
-
-          {/* ── Calendar panel ────────────────────────────────────── */}
-          <Popover.Portal>
-            <Popover.Content
-              side="bottom"
-              align="start"
-              sideOffset={4}
-              onOpenAutoFocus={(e) => e.preventDefault()}
-              onMouseLeave={() => setHoverDay(undefined)}
-              className={cn(
-                'z-50',
-                'bg-background border border-border rounded-[var(--radius-l)] shadow-md',
-                'p-[var(--spacing-m)]',
-                'outline-none',
-              )}
-            >
-              {isRange ? (
-                <DayPicker
-                  mode="range"
-                  numberOfMonths={numMonths}
-                  selected={rangeValue}
-                  onSelect={(selected) => {
-                    ;(props as DatePickerRangeProps).onChange?.(selected)
-                    if (selected?.from && selected?.to) {
-                      setOpen(false)
-                      setHoverDay(undefined)
-                    }
-                  }}
-                  onDayMouseEnter={(date, modifiers) => {
-                    if (!modifiers.disabled) setHoverDay(date)
-                  }}
-                  onDayMouseLeave={() => setHoverDay(undefined)}
-                  modifiers={previewModifiers}
-                  modifiersClassNames={previewModifiersClassNames}
-                  {...sharedDPProps}
-                />
-              ) : (
-                <DayPicker
-                  mode="single"
-                  selected={singleValue}
-                  onSelect={(selected) => {
-                    ;(props as DatePickerSingleProps).onChange?.(selected)
-                    setOpen(false)
-                  }}
-                  {...sharedDPProps}
-                />
-              )}
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
-
-        {/* Hidden input for form submission (single mode only) */}
-        {name && !isRange && singleValue && (
-          <input
-            type="hidden"
+      <div
+        ref={ref}
+        className={cn(isRange ? 'inline-block' : 'block w-full', className)}
+      >
+        {isRange ? (
+          <RangeDatePicker
+            value={(props as DatePickerRangeProps).value}
+            onChange={(props as DatePickerRangeProps).onChange}
+            disabled={disabled}
+            min={min}
+            max={max}
+            id={id}
+            placeholder={placeholder}
+            error={error}
+            locale={locale}
+          />
+        ) : (
+          <SingleDatePicker
+            value={(props as DatePickerSingleProps).value}
+            onChange={(props as DatePickerSingleProps).onChange}
+            disabled={disabled}
+            min={min}
+            max={max}
+            id={id}
             name={name}
-            value={dateFnsFormat(singleValue, 'yyyy-MM-dd')}
+            placeholder={placeholder}
+            error={error}
+            locale={locale}
           />
         )}
       </div>
     )
-  }
+  },
 )
 
 DatePicker.displayName = 'DatePicker'

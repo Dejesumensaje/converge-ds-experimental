@@ -1,0 +1,50 @@
+/*
+ * DatePicker — calendar range-band CSS
+ *
+ * The range tint extends edge-to-edge across each <td> cell.
+ * CalendarCell renders a <button> inside <td>; the <button>
+ * controls its own rounded-full background for endpoints.
+ * These rules paint the <td> so the band looks like a pill strip.
+ *
+ * All selectors are scoped to .dp-range-grid to avoid leaking.
+ */
+
+/* ── Middle cells: full-width tint ─────────────────────────── */
+.dp-range-grid td:has([data-selected]:not([data-selection-start]):not([data-selection-end])) {
+  background: color-mix(in srgb, var(--selection) 8%, transparent);
+}
+
+/* ── Start cell: right half tinted (band extends right) ─────── */
+.dp-range-grid td:has([data-selection-start]):not(:has([data-selection-end])) {
+  background: linear-gradient(
+    to right,
+    transparent 50%,
+    color-mix(in srgb, var(--selection) 8%, transparent) 50%
+  );
+}
+
+/* ── End cell: left half tinted (band extends left) ─────────── */
+.dp-range-grid td:has([data-selection-end]):not(:has([data-selection-start])) {
+  background: linear-gradient(
+    to left,
+    transparent 50%,
+    color-mix(in srgb, var(--selection) 8%, transparent) 50%
+  );
+}
+
+/* ── Hover-preview cells (RAC marks these during range drag) ─── */
+.dp-range-grid td:has([data-hovered]:not([data-selected]):not([data-selection-start]):not([data-selection-end])) {
+  background: color-mix(in srgb, var(--selection) 5%, transparent);
+}
+
+/* ── Segment placeholder text ────────────────────────────────── */
+.dp-segment[data-placeholder] {
+  color: var(--muted-foreground);
+}
+
+/* ── Segment focused (keyboard highlight) ────────────────────── */
+.dp-segment[data-focused] {
+  background: var(--selection);
+  color: var(--selection-foreground);
+  border-radius: var(--radius-xs);
+}
