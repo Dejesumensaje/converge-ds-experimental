@@ -18,7 +18,7 @@ export { Chip, type ChipProps } from './Chip'
 export { Dot, type DotProps } from './Dot'
 export { Input, type InputProps } from './Input'
 export { Textarea, type TextareaProps } from './Textarea'
-export { DatePicker, type DatePickerProps } from './DatePicker'
+export { DatePicker, type DatePickerProps, type DateRange } from './DatePicker'
 export { Switch, type SwitchProps } from './Switch'
 export { Checkbox, type CheckboxProps, type CheckboxSize } from './Checkbox'
 export {
