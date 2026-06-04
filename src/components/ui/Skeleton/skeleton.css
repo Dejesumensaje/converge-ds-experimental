@@ -1,0 +1,33 @@
+/* ================================================================
+   Skeleton — shimmer animation
+   All motion defined here in @layer base. The prefers-reduced-motion
+   override is in the SAME layer so specificity resolves normally
+   (equal selectors, later declaration wins). No cross-layer conflict.
+   ================================================================ */
+
+@layer base {
+  .skeleton {
+    display: block;
+    background: linear-gradient(
+      90deg,
+      var(--muted)          0%,
+      var(--neutral-gray1)  50%,
+      var(--muted)          100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-shimmer {
+    0%   { background-position:  100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  /* Same layer → comes after the rule above → wins when query matches */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      animation: none;
+      background: var(--muted);
+    }
+  }
+}

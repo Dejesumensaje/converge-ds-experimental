@@ -26,6 +26,7 @@ export { Modal, type ModalProps, type ModalSize } from './Modal'
 export { AlertModal, type AlertModalProps, type AlertModalVariant } from './AlertModal'
 export { FullScreenAlert, type FullScreenAlertProps, type FullScreenAlertVariant } from './FullScreenAlert'
 export { Drawer, type DrawerProps, type DrawerSize } from './Drawer'
+export { Skeleton, type SkeletonProps, type SkeletonVariant } from './Skeleton'
 export {
   Table, type TableProps,
   TableHeader,

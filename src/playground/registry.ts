@@ -19,6 +19,7 @@ import { CountBadgeSection } from './sections/CountBadgeSection'
 import { DotSection } from './sections/DotSection'
 import { ChipSection } from './sections/ChipSection'
 import { AvatarSection } from './sections/AvatarSection'
+import { SkeletonSection } from './sections/SkeletonSection'
 import { TooltipSection } from './sections/TooltipSection'
 import { ModalSection } from './sections/ModalSection'
 import { AlertModalSection } from './sections/AlertModalSection'
@@ -57,6 +58,7 @@ export const SECTION_REGISTRY: SectionEntry[] = [
   { group: 'data-display', id: 'dot',              label: 'Dot',             Component: DotSection },
   { group: 'data-display', id: 'chip',             label: 'Chip',            Component: ChipSection },
   { group: 'data-display', id: 'avatar',            label: 'Avatar',          Component: AvatarSection },
+  { group: 'feedback',     id: 'skeleton',          label: 'Skeleton',        Component: SkeletonSection },
   { group: 'feedback',     id: 'tooltip',           label: 'Tooltip',         Component: TooltipSection },
   { group: 'feedback',     id: 'modal',             label: 'Modal',           Component: ModalSection },
   { group: 'feedback',     id: 'alertmodal',        label: 'AlertModal',      Component: AlertModalSection },
