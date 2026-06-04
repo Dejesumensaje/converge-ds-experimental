@@ -19,3 +19,16 @@
     }
   }
 }
+
+/*
+  Same rationale as checkbox.css: transition-colors / duration-150 live in
+  @layer utilities and need an equally-ranked (or later) override to be
+  suppressed under prefers-reduced-motion.
+*/
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    .radio-item {
+      transition: none;
+    }
+  }
+}

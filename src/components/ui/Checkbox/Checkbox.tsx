@@ -99,11 +99,11 @@ export const Checkbox = React.forwardRef<
             aria-describedby={descById}
             className={cn(
               /* Self-contained reset — must not rely on preflight */
-              '[box-sizing:border-box] appearance-none',
+              'checkbox-root [box-sizing:border-box] appearance-none',
               /* Layout + shape */
               'inline-flex shrink-0 items-center justify-center',
-              /* radius-m = 8px (smallest token; see NOTE above) */
-              'rounded-[var(--radius-m)]',
+              /* radius-xs = 4px — soft-square corner */
+              'rounded-[var(--radius-xs)]',
               b.border,
               b.size,
               'transition-colors duration-150 cursor-pointer',

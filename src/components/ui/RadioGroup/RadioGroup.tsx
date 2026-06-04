@@ -163,7 +163,7 @@ export const RadioGroupItem = React.forwardRef<
           disabled={disabled}
           className={cn(
             /* Self-contained reset */
-            '[box-sizing:border-box] appearance-none',
+            'radio-item [box-sizing:border-box] appearance-none',
             /* Shape — full circle, --radius-full */
             'inline-flex shrink-0 items-center justify-center rounded-full',
             d.circle,

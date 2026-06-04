@@ -19,3 +19,17 @@
     }
   }
 }
+
+/*
+  The transition-colors / duration-150 utilities come from @layer utilities
+  (higher priority than @layer base). This block also runs in @layer utilities
+  and is processed after Tailwind's own utilities (Vite import order), so it
+  wins within the same layer and suppresses the border/bg transition.
+*/
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    .checkbox-root {
+      transition: none;
+    }
+  }
+}
