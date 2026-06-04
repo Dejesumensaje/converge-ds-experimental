@@ -4,11 +4,6 @@
 @import "tailwindcss/utilities.css";
 @import "./theme.css";
 
-/* ── Layout constants ─────────────────────────────────────────────── */
-:root {
-  --header-height: 64px;
-}
-
 /*
   DS-wide reduced-motion safety net.
   !important overrides any layer (including @layer utilities where Tailwind

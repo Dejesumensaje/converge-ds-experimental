@@ -119,7 +119,7 @@ export default function App() {
       </div>
 
       {/* ── Page layout ────────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 'calc(48px + var(--spacing-xxl))' }}>
+      <div style={{ paddingTop: 'calc(var(--header-height) + var(--spacing-xxl))' }}>
         <div
           style={{
             maxWidth: 1280,
