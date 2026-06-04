@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { DismissableLayer } from '@radix-ui/react-dismissable-layer'
 import { X } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import './actionbar.css'
@@ -22,26 +23,16 @@ import './actionbar.css'
     Use a presence wrapper (e.g. Radix Presence, Framer motion AnimatePresence)
     for an animated exit. Example:
       {open && <ActionBar ...>...</ActionBar>}
+
+  • Esc handling is delegated to @radix-ui/react-dismissable-layer.
+    DismissableLayer automatically:
+    1. Stacks layers — only the topmost layer responds to Esc.
+    2. Yields to Radix overlays (Dialog, Sheet, etc.) which push their own
+       DismissableLayer onto the stack, taking precedence.
+    Pointer-outside and focus-outside dismiss are suppressed — ActionBar
+    is non-modal and should not close on incidental outside interaction.
+    Memoize onDismiss with useCallback to keep the layer stable.
 */
-
-/* =================================================================
-   Module-level dismiss stack (C2 + W7 fix)
-
-   Guarantees that:
-   1. Only the topmost mounted ActionBar responds to Esc (multi-instance safe).
-   2. Yields to Radix overlays — Dialog, AlertModal, Drawer, and
-      FullScreenAlert all set document.body.style.pointerEvents = 'none'
-      when open; if that flag is active the ActionBar stays silent.
-
-   ⚠ Memoize onDismiss with useCallback to prevent effect churn on
-     parent re-renders and avoid spurious stack push/pop cycles.
-   ================================================================= */
-const dismissStack: Array<() => void> = []
-
-function isModalActive(): boolean {
-  return typeof document !== 'undefined' &&
-    document.body.style.pointerEvents === 'none'
-}
 
 /* =================================================================
    Types
@@ -122,29 +113,9 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
     },
     ref
   ) => {
-    /* Esc → onDismiss: topmost instance only, yields to modal overlays */
-    React.useEffect(() => {
-      if (!onDismiss) return
-      dismissStack.push(onDismiss)
-
-      const handle = (e: KeyboardEvent) => {
-        if (e.key !== 'Escape') return
-        if (isModalActive()) return
-        if (dismissStack[dismissStack.length - 1] !== onDismiss) return
-        onDismiss()
-      }
-      document.addEventListener('keydown', handle)
-
-      return () => {
-        document.removeEventListener('keydown', handle)
-        const idx = dismissStack.lastIndexOf(onDismiss)
-        if (idx !== -1) dismissStack.splice(idx, 1)
-      }
-    }, [onDismiss])
-
     const positionStyle = position ? POSITION_STYLE[position] : undefined
 
-    return (
+    const rootDiv = (
       /* ── Outer: glass shell ──────────────────────────────────── */
       <div
         {...restProps}
@@ -206,6 +177,29 @@ export const ActionBar = React.forwardRef<HTMLDivElement, ActionBarProps>(
           )}
         </div>
       </div>
+    )
+
+    /*
+      DismissableLayer handles Esc stacking natively:
+      - Only the topmost layer receives the Esc event.
+      - Radix overlays (Dialog, Drawer, etc.) push their own layer and take
+        precedence automatically — no manual isModalActive() check needed.
+      - pointer-outside and focus-outside dismiss are suppressed: ActionBar
+        is non-modal and must not close on incidental outside interaction.
+      - When onDismiss is absent, render the div unwrapped so no layer is
+        registered and Esc does nothing.
+    */
+    if (!onDismiss) return rootDiv
+
+    return (
+      <DismissableLayer
+        asChild
+        onEscapeKeyDown={onDismiss}
+        onPointerDownOutside={e => e.preventDefault()}
+        onFocusOutside={e => e.preventDefault()}
+      >
+        {rootDiv}
+      </DismissableLayer>
     )
   }
 )
