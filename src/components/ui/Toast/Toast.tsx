@@ -72,12 +72,15 @@ const ToastContext = React.createContext<ToastContextValue | null>(null)
 
 /* =================================================================
    Per-type config
-   Contrast ratios (calculated, WCAG relative luminance):
-     success:  --success #207F19 on --success-bg-light #E6F5EB     → 4.53:1 ✓ AA
-     error:    --destructive #DA291C on --error-bg-light #FDF5F4   → 4.53:1 ✓ AA
-     warning:  --warning-foreground #9F6514 on --warning-bg-light  → 4.51:1 ✓ AA
+   Text contrast (title + description at full opacity, WCAG relative luminance):
+     success:  --success #207F19 on --success-bg-light #E6F5EB       → 4.53:1 ✓ AA
+     error:    --destructive #DA291C on --error-bg-light #FDF5F4     → 4.53:1 ✓ AA
+     warning:  --warning-foreground #9F6514 on --warning-bg-light    → 4.51:1 ✓ AA
                (--warning #ED8B00 only 2.37:1 — fails, NOT used)
-     info:     --informative #005587 on --informative-bg-light     → 6.91:1 ✓ AAA
+     info:     --informative #005587 on --informative-bg-light       → 6.91:1 ✓ AAA
+   Focus ring (--ring #26890D solid, WCAG 1.4.11 ≥3:1 non-text contrast):
+     success tint #E6F5EB: 3.99:1 ✓ / error tint #FDF5F4: 4.19:1 ✓
+     warning tint #FEF6EA: 4.20:1 ✓ / info tint #E6F1F7: 3.92:1 ✓
    ================================================================= */
 
 type TypeConfig = {
@@ -125,12 +128,12 @@ const TYPE_CONFIG: Record<ToastType, TypeConfig> = {
    ================================================================= */
 
 const VIEWPORT_POSITION: Record<ToastPosition, React.CSSProperties> = {
-  'top-left':      { top: 24, left: 24 },
-  'top-center':    { top: 24, left: '50%', transform: 'translateX(-50%)' },
-  'top-right':     { top: 24, right: 24 },
-  'bottom-left':   { bottom: 24, left: 24 },
-  'bottom-center': { bottom: 24, left: '50%', transform: 'translateX(-50%)' },
-  'bottom-right':  { bottom: 24, right: 24 },
+  'top-left':      { top: 'var(--spacing-xl)', left: 'var(--spacing-xl)' },
+  'top-center':    { top: 'var(--spacing-xl)', left: '50%', transform: 'translateX(-50%)' },
+  'top-right':     { top: 'var(--spacing-xl)', right: 'var(--spacing-xl)' },
+  'bottom-left':   { bottom: 'var(--spacing-xl)', left: 'var(--spacing-xl)' },
+  'bottom-center': { bottom: 'var(--spacing-xl)', left: '50%', transform: 'translateX(-50%)' },
+  'bottom-right':  { bottom: 'var(--spacing-xl)', right: 'var(--spacing-xl)' },
 }
 
 /* =================================================================
@@ -176,10 +179,11 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
         {/* Text block */}
         <div className="flex flex-col gap-[var(--spacing-xxs)] min-w-0 flex-1">
           <RadixToast.Title className="body-body2-semibold">
+            <span className="sr-only">{config.srPrefix}: </span>
             {entry.message}
           </RadixToast.Title>
           {entry.description && (
-            <RadixToast.Description className="body-body2-regular" style={{ opacity: 0.85 }}>
+            <RadixToast.Description className="body-body2-regular">
               {entry.description}
             </RadixToast.Description>
           )}
@@ -194,6 +198,7 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
                 size="sm"
                 onClick={entry.action.onClick}
                 style={{ color: config.color }}
+                className="toast-action-ring"
               >
                 {entry.action.label}
               </Button>
@@ -207,12 +212,14 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
               className={cn(
                 'toast-close-btn',
                 'inline-flex items-center justify-center shrink-0',
-                'w-5 h-5 rounded-full',
+                // W5: 24×24 meets WCAG 2.2 SC 2.5.8 minimum; W4: DS radius token
+                'w-6 h-6 rounded-[var(--radius-full)]',
                 'cursor-pointer',
-                'transition-opacity duration-150',
+                // hover: defined in toast.css so reduced-motion can suppress it
                 'hover:opacity-70',
-                'focus-visible:outline-none focus-visible:ring-2',
-                'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+                // C2: solid ring (no color-mix) + offset for visibility on light tints
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                'focus-visible:ring-[var(--ring)]',
               )}
             >
               <X size={12} aria-hidden="true" />
@@ -300,8 +307,8 @@ export function ToastProvider({ position = 'bottom-right', children }: ToastProv
             display: 'flex',
             flexDirection: 'column',
             gap: 'var(--spacing-s)',
-            width: 380,
-            maxWidth: 'calc(100vw - 48px)',
+            width: '380px',
+            maxWidth: 'calc(100vw - var(--spacing-jumbo))',
             padding: 0,
             margin: 0,
             listStyle: 'none',

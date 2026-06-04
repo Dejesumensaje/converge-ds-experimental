@@ -77,6 +77,9 @@
     margin: 0;
     font: inherit;
     color: inherit;
+    /* W6: transition defined here (not Tailwind utility) so the
+       reduced-motion override in this same layer can suppress it */
+    transition: opacity 150ms ease;
   }
 
   /* ── Viewport: no default Radix padding ──────────────────────── */
@@ -92,8 +95,25 @@
     .toast-root[data-swipe='end'] {
       animation: none;
     }
-    .toast-root[data-swipe='cancel'] {
+    /* W6: close button hover transition + swipe cancel — same layer,
+       later declaration wins (same cascade pattern as ActionBar) */
+    .toast-root[data-swipe='cancel'],
+    .toast-close-btn {
       transition: none;
     }
   }
+}
+
+/* ================================================================
+   Solid focus ring for action Button inside toast
+   Un-layered CSS has higher cascade priority than any @layer rule
+   (including Tailwind's @layer utilities). This overrides Button's
+   40%-transparent default ring, which is ~1.2:1 on light tints.
+   Measured solid --ring (#26890D) ratios: success 3.99:1 ✓
+   error 4.19:1 ✓  warning 4.20:1 ✓  info 3.92:1 ✓ (all ≥3:1)
+   ================================================================ */
+.toast-action-ring:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring);
 }
