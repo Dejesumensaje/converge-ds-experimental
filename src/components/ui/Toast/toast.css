@@ -9,7 +9,8 @@
   /* ── Root: pill shape + elevation ─────────────────────────────── */
   .toast-root {
     box-sizing: border-box;
-    border-radius: var(--radius-full);
+    /* border-radius applied inline — pill (--radius-full) when title-only,
+       rounded-rect (--radius-l) when description is present */
     box-shadow: var(--elevation-md);
     /* Radix sets width via the viewport's list; we enforce full-width */
     width: 100%;
@@ -67,8 +68,8 @@
     to   { transform: translateX(calc(var(--radix-toast-swipe-end-x) * 4)); opacity: 0; }
   }
 
-  /* ── Action + Close button resets (self-contained) ────────────── */
-  .toast-action-btn,
+  /* ── Close button reset (self-contained) ─────────────────────── */
+  /* Action uses the DS Button component (handles its own resets). */
   .toast-close-btn {
     appearance: none;
     background: transparent;

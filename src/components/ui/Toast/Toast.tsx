@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as RadixToast from '@radix-ui/react-toast'
 import { Check, XCircle, TriangleAlert, Info, X } from 'lucide-react'
 import { cn } from '../../../lib/utils'
+import { Button } from '../Button'
 import './toast.css'
 
 /* =================================================================
@@ -154,7 +155,11 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
       type={config.radixType}
       duration={isPersistent ? Infinity : entry.duration}
       className={cn('toast-root', isTop ? 'toast-enter-top' : 'toast-enter-bottom')}
-      style={{ backgroundColor: config.bg, color: config.color }}
+      style={{
+        backgroundColor: config.bg,
+        color: config.color,
+        borderRadius: entry.description ? 'var(--radius-l)' : 'var(--radius-full)',
+      }}
     >
       {/* Pill inner layout */}
       <div
@@ -184,25 +189,14 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
         <div className="flex items-center gap-[var(--spacing-xxs)] shrink-0 self-start ml-[var(--spacing-xxs)]">
           {entry.action && (
             <RadixToast.Action asChild altText={entry.action.label}>
-              <button
-                type="button"
+              <Button
+                variant="text-link"
+                size="sm"
                 onClick={entry.action.onClick}
-                className={cn(
-                  'toast-action-btn',
-                  'button-small',
-                  'inline-flex items-center justify-center',
-                  'px-[var(--spacing-s)] h-[22px]',
-                  'rounded-[var(--radius-full)]',
-                  'border border-current',
-                  'cursor-pointer',
-                  'transition-opacity duration-150',
-                  'hover:opacity-70',
-                  'focus-visible:outline-none focus-visible:ring-2',
-                  'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
-                )}
+                style={{ color: config.color }}
               >
                 {entry.action.label}
-              </button>
+              </Button>
             </RadixToast.Action>
           )}
 
