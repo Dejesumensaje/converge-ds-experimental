@@ -1,12 +1,12 @@
 import * as React from 'react'
 import * as Popover from '@radix-ui/react-popover'
 import { DayPicker, type Matcher, type DateRange } from 'react-day-picker'
-import { format as dateFnsFormat } from 'date-fns'
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { format as dateFnsFormat, isSameDay } from 'date-fns'
+import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
 /* =================================================================
-   Public types — re-export DateRange so consumers don't import rdp
+   Public types — re-export DateRange so consumers skip rdp import
    ================================================================= */
 
 export type { DateRange }
@@ -39,64 +39,88 @@ type DatePickerRangeProps = DatePickerBaseProps & {
 export type DatePickerProps = DatePickerSingleProps | DatePickerRangeProps
 
 /* =================================================================
-   Shared internal class strings
+   Responsive hook — collapses to 1 month below breakpoint
    ================================================================= */
 
+const RANGE_BREAKPOINT = 640 // px
+
+function useIsNarrow(bp = RANGE_BREAKPOINT): boolean {
+  const getMatch = () =>
+    typeof window !== 'undefined' && window.innerWidth < bp
+  const [narrow, setNarrow] = React.useState(getMatch)
+  React.useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${bp - 1}px)`)
+    setNarrow(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setNarrow(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [bp])
+  return narrow
+}
+
+/* =================================================================
+   Day-button class factory — size adapts for touch targets
+   =================================================================
+   Desktop: 32×32px (w-8 h-8)
+   Touch/narrow: 44×44px (w-11 h-11) — WCAG 2.2 SC 2.5.8
+   ================================================================= */
+
+function makeDayBtnClass(isNarrow: boolean): string {
+  const sz = isNarrow ? 'w-11 h-11' : 'w-8 h-8'
+  return cn(
+    /* reset */
+    'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
+    /* layout */
+    sz, 'rounded-full flex items-center justify-center',
+    /* typography */
+    'body-body2-regular text-foreground',
+    /* interaction */
+    'cursor-pointer hover:bg-muted transition-colors duration-100',
+    /* focus ring — --primary (green), allowed §3.5 */
+    'outline-none focus-visible:ring-2',
+    'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+
+    /* ── selected / range endpoints ──────────────────────────── */
+    'group-data-[selected=true]:bg-[var(--selection)]',
+    'group-data-[selected=true]:text-[var(--selection-foreground)]',
+    'group-data-[selected=true]:hover:bg-[var(--selection)]',
+
+    /* ── today — subtle ring, never green ────────────────────── */
+    'group-data-[today=true]:ring-1',
+    'group-data-[today=true]:ring-[var(--neutral-gray3)]',
+    'group-data-[today=true]:ring-offset-1',
+    'group-data-[today=true]:ring-offset-background',
+
+    /* ── outside month ───────────────────────────────────────── */
+    'group-data-[outside=true]:opacity-30',
+
+    /* ── disabled ────────────────────────────────────────────── */
+    'group-data-[disabled=true]:opacity-30',
+    'group-data-[disabled=true]:cursor-not-allowed',
+    'group-data-[disabled=true]:pointer-events-none',
+
+    /* ── range middle — cell carries the tint ────────────────── */
+    'group-[.is-range-middle]:bg-transparent',
+    'group-[.is-range-middle]:hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
+
+    /* ── hover preview middle ────────────────────────────────── */
+    'group-[.is-preview-middle]:bg-transparent',
+    'group-[.is-preview-middle]:hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
+
+    /* ── hover preview endpoint (lighter than actual selection) ─ */
+    'group-[.is-preview-end]:bg-[color-mix(in_srgb,var(--selection)_20%,transparent)]',
+    'group-[.is-preview-end]:text-foreground',
+    'group-[.is-preview-end]:hover:bg-[color-mix(in_srgb,var(--selection)_30%,transparent)]',
+  )
+}
+
 const NAV_BTN = cn(
-  /* reset */
   'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
-  /* layout */
   'w-8 h-8 rounded-[var(--radius-m)] flex items-center justify-center',
-  /* colors */
   'text-muted-foreground hover:text-foreground hover:bg-muted',
-  /* interaction */
   'cursor-pointer transition-colors duration-100',
-  /* focus */
   'outline-none focus-visible:ring-2',
   'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
-)
-
-/*
- * Day button — handles all states for both single and range modes.
- * State is read from data-* attributes on the parent <td> (group target)
- * or from class markers added via classNames.range_middle.
- */
-const DAY_BTN = cn(
-  /* reset — §3.6 self-contained */
-  'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
-  /* layout */
-  'w-8 h-8 rounded-full flex items-center justify-center',
-  /* typography */
-  'body-body2-regular text-foreground',
-  /* interaction */
-  'cursor-pointer hover:bg-muted transition-colors duration-100',
-  /* focus ring — --primary (green), allowed per §3.5 */
-  'outline-none focus-visible:ring-2',
-  'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
-
-  /* ── Single selected + range endpoints ──────────────────────── */
-  /* data-selected="true" is set on <td> for both single and range start/end */
-  'group-data-[selected=true]:bg-[var(--selection)]',
-  'group-data-[selected=true]:text-[var(--selection-foreground)]',
-  'group-data-[selected=true]:hover:bg-[var(--selection)]',
-
-  /* ── Today — subtle ring, NOT green ────────────────────────── */
-  'group-data-[today=true]:ring-1',
-  'group-data-[today=true]:ring-[var(--neutral-gray3)]',
-  'group-data-[today=true]:ring-offset-1',
-  'group-data-[today=true]:ring-offset-background',
-
-  /* ── Outside current month — dim ────────────────────────────── */
-  'group-data-[outside=true]:opacity-30',
-
-  /* ── Disabled — dim + block ─────────────────────────────────── */
-  'group-data-[disabled=true]:opacity-30',
-  'group-data-[disabled=true]:cursor-not-allowed',
-  'group-data-[disabled=true]:pointer-events-none',
-
-  /* ── Range middle — transparent (cell carries the tint) ──────── */
-  'group-[.is-range-middle]:bg-transparent',
-  'group-[.is-range-middle]:hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
 )
 
 /* =================================================================
@@ -114,7 +138,6 @@ function formatRangeTrigger(
 ): string {
   if (!range?.from) return placeholder
   if (!range.to) return dateFnsFormat(range.from, fmt)
-  // Compact: "Jun 4 – Jun 18, 2026" — from without year, to with full format
   return `${dateFnsFormat(range.from, 'MMM d')} – ${dateFnsFormat(range.to, fmt)}`
 }
 
@@ -135,9 +158,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     } = props
 
     const isRange = props.mode === 'range'
-
-    const placeholder =
-      props.placeholder ?? (isRange ? 'Select dates' : 'Select a date')
+    const placeholder = props.placeholder ?? (isRange ? 'Select dates' : 'Select a date')
 
     const autoId = React.useId()
     const triggerId = idProp ?? autoId
@@ -145,19 +166,44 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     const [open, setOpen] = React.useState(false)
     const [hovered, setHovered] = React.useState(false)
 
-    /* ── Derived "has value" ────────────────────────────────────── */
-    const hasValue = isRange
-      ? Boolean((props as DatePickerRangeProps).value?.from)
-      : Boolean((props as DatePickerSingleProps).value)
+    /*
+     * Hover preview (range mode only).
+     * Tracks which day the cursor is over while `from` is set but `to` is not.
+     */
+    const [hoverDay, setHoverDay] = React.useState<Date | undefined>(undefined)
 
-    /* ── Trigger label ──────────────────────────────────────────── */
+    /* Collapse to 1 month on narrow viewport */
+    const isNarrow = useIsNarrow()
+    const numMonths = isRange && !isNarrow ? 2 : 1
+
+    /* Day button class — size adapts to viewport */
+    const DAY_BTN = React.useMemo(() => makeDayBtnClass(isNarrow), [isNarrow])
+
+    /* ── Derived values ─────────────────────────────────────────── */
+    const rangeValue = isRange ? (props as DatePickerRangeProps).value : undefined
+    const singleValue = !isRange ? (props as DatePickerSingleProps).value : undefined
+
+    const hasValue = isRange
+      ? Boolean(rangeValue?.from)
+      : Boolean(singleValue)
+
     const triggerLabel = isRange
-      ? formatRangeTrigger((props as DatePickerRangeProps).value, format, placeholder)
+      ? formatRangeTrigger(rangeValue, format, placeholder)
       : hasValue
-      ? formatSingle((props as DatePickerSingleProps).value!, format)
+      ? formatSingle(singleValue!, format)
       : placeholder
 
-    /* ── Ring class — mirrors Input ─────────────────────────────── */
+    /* ── Preview range (range mode, from set, no to, cursor moving) */
+    const previewRange = React.useMemo<DateRange | null>(() => {
+      if (!isRange || !hoverDay || !rangeValue?.from || rangeValue?.to) return null
+      const from = rangeValue.from!
+      if (isSameDay(hoverDay, from)) return null
+      return from <= hoverDay
+        ? { from, to: hoverDay }
+        : { from: hoverDay, to: from }
+    }, [isRange, hoverDay, rangeValue?.from, rangeValue?.to])
+
+    /* ── Ring ────────────────────────────────────────────────────── */
     const getRingClass = () => {
       if (disabled) return 'ring-1 ring-[var(--neutral-gray3)]'
       if (open) return 'ring-2 ring-selection'
@@ -171,63 +217,49 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       ...(max ? [{ after: max }] : []),
     ]
 
-    /* ── classNames — Nav absolutely positioned so it spans 1 or 2 months */
-    const dpClassNames = {
+    /* ── Clear ──────────────────────────────────────────────────── */
+    const handleClear = () => {
+      if (isRange) {
+        ;(props as DatePickerRangeProps).onChange?.(undefined)
+      } else {
+        ;(props as DatePickerSingleProps).onChange?.(undefined)
+      }
+    }
+
+    /* ── classNames (memoized, depends on isNarrow + numMonths) ─── */
+    const weekdaySz = isNarrow ? 'w-11 h-11' : 'w-8 h-8'
+    const dpClassNames = React.useMemo(() => ({
       root: '',
+      months: cn('relative', isRange && numMonths > 1 && 'flex gap-[var(--spacing-xl)]'),
       /*
-       * "relative" anchors the absolutely positioned Nav.
-       * Range: "flex gap-xl" puts the two months side by side.
-       * Single: block (no flex needed).
+       * Nav: absolutely positioned, spans the full width of the months
+       * container (1 or 2 months). Months use pt-10 to clear it.
        */
-      months: cn('relative', isRange && 'flex gap-[var(--spacing-xl)]'),
-      /*
-       * Nav is positioned to float above the month(s). It stays out of the
-       * normal flow so months don't need to reserve space — they use pt-10.
-       */
-      nav: cn(
-        'absolute top-0 inset-x-0 z-10',
-        'flex items-center justify-between',
-      ),
+      nav: 'absolute top-0 inset-x-0 z-10 flex items-center justify-between',
       button_previous: NAV_BTN,
       button_next: NAV_BTN,
-      /* Month: flex-1 in range mode for equal-width columns. pt-10 clears nav. */
-      month: cn('pt-10', isRange && 'flex-1'),
-      /* Caption: label centered within its month column */
+      month: cn('pt-10', isRange && numMonths > 1 && 'flex-1'),
       month_caption: 'text-center mb-[var(--spacing-s)]',
       caption_label: 'body-body1-semibold text-foreground',
       month_grid: 'w-full border-collapse',
       weekdays: '',
-      weekday:
-        'w-8 h-8 text-center caption-caption text-muted-foreground font-normal',
+      weekday: cn(weekdaySz, 'text-center caption-caption text-muted-foreground font-normal'),
       weeks: '',
       week: '',
-      /*
-       * Day cell (<td>) — "group" class enables group-data-[*]: variants
-       * on the DayButton child.
-       */
-      day: 'group p-[2px] text-center',
+      /* "group" on <td> enables group-data-[*]: and group-[.class]: on DayButton */
+      day: cn('group text-center', isNarrow ? 'p-[1px]' : 'p-[2px]'),
       day_button: DAY_BTN,
-
-      /* ── Modifier classes (applied on the <td> cell) ─────────── */
-      /* selected/today/outside/disabled: read via data-* → no extra class needed */
+      /* Modifier class names on <td> */
       selected: '',
       today: '',
       outside: '',
       disabled: '',
       hidden: 'invisible',
       focused: '',
-
-      /* Range endpoints: data-selected handles styling; class name for semantics */
       range_start: '',
       range_end: '',
-      /*
-       * Range middle: tinted cell background (the stripe).
-       * "is-range-middle" marker lets DAY_BTN use group-[.is-range-middle]:*.
-       */
-      range_middle:
-        'is-range-middle bg-[color-mix(in_srgb,var(--selection)_10%,transparent)]',
-
-      /* Animation slots (unused — no animate prop) */
+      range_middle: 'is-range-middle bg-[color-mix(in_srgb,var(--selection)_10%,transparent)]',
+      /* Animation (unused) */
       weeks_before_enter: '',
       weeks_before_exit: '',
       weeks_after_enter: '',
@@ -236,15 +268,51 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       caption_after_exit: '',
       caption_before_enter: '',
       caption_before_exit: '',
+    }), [DAY_BTN, isRange, isNarrow, numMonths, weekdaySz])
+
+    /* ── Preview modifiers passed to DayPicker ──────────────────── */
+    const previewModifiers: Record<string, Matcher> | undefined = previewRange
+      ? {
+          preview_end: previewRange.to!,
+          preview_middle: {
+            after: previewRange.from!,
+            before: previewRange.to!,
+          } as Matcher,
+        }
+      : undefined
+
+    const previewModifiersClassNames = previewRange
+      ? {
+          preview_end: 'is-preview-end',
+          preview_middle:
+            'is-preview-middle bg-[color-mix(in_srgb,var(--selection)_8%,transparent)]',
+        }
+      : undefined
+
+    /* ── Shared DayPicker props ──────────────────────────────────── */
+    const sharedDPProps = {
+      disabled: disabledMatchers.length > 0 ? disabledMatchers : undefined,
+      components: {
+        Chevron: ({ orientation }: { orientation?: string }) =>
+          orientation === 'left'
+            ? <ChevronLeft size={16} aria-hidden="true" />
+            : <ChevronRight size={16} aria-hidden="true" />,
+      },
+      classNames: dpClassNames,
     }
 
     return (
       <div className={cn('inline-block w-full', className)}>
         <Popover.Root
           open={open}
-          onOpenChange={(o) => { if (!disabled) setOpen(o) }}
+          onOpenChange={(o) => {
+            if (!disabled) {
+              setOpen(o)
+              if (!o) setHoverDay(undefined)
+            }
+          }}
         >
-          {/* ── Trigger — same height/ring/padding as Input md ─── */}
+          {/* ── Trigger ──────────────────────────────────────────── */}
           <Popover.Trigger asChild>
             <button
               ref={ref}
@@ -257,17 +325,11 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               onMouseEnter={() => !disabled && setHovered(true)}
               onMouseLeave={() => setHovered(false)}
               className={cn(
-                /* sizing */
                 'relative h-12 w-full rounded-[var(--radius-m)] transition-all duration-150',
-                /* reset */
                 'appearance-none border-0 m-0 box-border [font:inherit]',
-                /* colors */
                 'bg-[var(--input-background)]',
-                /* ring */
                 getRingClass(),
-                /* layout */
                 'flex items-center text-left cursor-pointer',
-                /* padding — room for icon */
                 'pl-[var(--spacing-l)] pr-[44px]',
                 disabled && 'opacity-40 cursor-not-allowed',
               )}
@@ -281,16 +343,48 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
                 {triggerLabel}
               </span>
 
-              <span
-                aria-hidden="true"
-                className="absolute pointer-events-none"
-                style={{
-                  right: 'var(--spacing-l)',
-                  color: disabled ? 'var(--text-disabled)' : 'var(--muted-foreground)',
-                }}
-              >
-                <Calendar size={20} />
-              </span>
+              {/*
+               * Right slot: X when has value (clear), Calendar icon when empty.
+               * Matches the SearchInput clear-button pattern.
+               */}
+              {hasValue && !disabled ? (
+                <button
+                  type="button"
+                  aria-label="Clear"
+                  tabIndex={-1}
+                  onMouseDown={(e) => {
+                    e.preventDefault()   // keep popover from toggling
+                    e.stopPropagation()
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleClear()
+                  }}
+                  className={cn(
+                    'absolute flex items-center justify-center',
+                    'w-6 h-6 rounded-[var(--radius-m)]',
+                    'appearance-none border-0 m-0 bg-transparent box-border [font:inherit]',
+                    'text-muted-foreground hover:text-foreground hover:bg-muted',
+                    'cursor-pointer transition-colors duration-100',
+                    'outline-none focus-visible:ring-2 focus-visible:ring-inset',
+                    'focus-visible:ring-[color-mix(in_srgb,var(--ring)_40%,transparent)]',
+                  )}
+                  style={{ right: 'var(--spacing-l)' }}
+                >
+                  <X size={14} aria-hidden="true" />
+                </button>
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="absolute pointer-events-none"
+                  style={{
+                    right: 'var(--spacing-l)',
+                    color: disabled ? 'var(--text-disabled)' : 'var(--muted-foreground)',
+                  }}
+                >
+                  <Calendar size={20} />
+                </span>
+              )}
             </button>
           </Popover.Trigger>
 
@@ -301,6 +395,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               align="start"
               sideOffset={4}
               onOpenAutoFocus={(e) => e.preventDefault()}
+              onMouseLeave={() => setHoverDay(undefined)}
               className={cn(
                 'z-50',
                 'bg-background border border-border rounded-[var(--radius-l)] shadow-md',
@@ -311,53 +406,44 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               {isRange ? (
                 <DayPicker
                   mode="range"
-                  numberOfMonths={2}
-                  selected={(props as DatePickerRangeProps).value}
+                  numberOfMonths={numMonths}
+                  selected={rangeValue}
                   onSelect={(selected) => {
                     ;(props as DatePickerRangeProps).onChange?.(selected)
-                    if (selected?.from && selected?.to) setOpen(false)
+                    if (selected?.from && selected?.to) {
+                      setOpen(false)
+                      setHoverDay(undefined)
+                    }
                   }}
-                  disabled={disabledMatchers.length > 0 ? disabledMatchers : undefined}
-                  components={{
-                    Chevron: ({ orientation }) =>
-                      orientation === 'left'
-                        ? <ChevronLeft size={16} aria-hidden="true" />
-                        : <ChevronRight size={16} aria-hidden="true" />,
+                  onDayMouseEnter={(date, modifiers) => {
+                    if (!modifiers.disabled) setHoverDay(date)
                   }}
-                  classNames={dpClassNames}
+                  onDayMouseLeave={() => setHoverDay(undefined)}
+                  modifiers={previewModifiers}
+                  modifiersClassNames={previewModifiersClassNames}
+                  {...sharedDPProps}
                 />
               ) : (
                 <DayPicker
                   mode="single"
-                  selected={(props as DatePickerSingleProps).value}
+                  selected={singleValue}
                   onSelect={(selected) => {
                     ;(props as DatePickerSingleProps).onChange?.(selected)
                     setOpen(false)
                   }}
-                  disabled={disabledMatchers.length > 0 ? disabledMatchers : undefined}
-                  components={{
-                    Chevron: ({ orientation }) =>
-                      orientation === 'left'
-                        ? <ChevronLeft size={16} aria-hidden="true" />
-                        : <ChevronRight size={16} aria-hidden="true" />,
-                  }}
-                  classNames={dpClassNames}
+                  {...sharedDPProps}
                 />
               )}
             </Popover.Content>
           </Popover.Portal>
         </Popover.Root>
 
-        {/* Hidden input for form submission — single mode only */}
-        {name && !isRange && (
+        {/* Hidden input for form submission (single mode only) */}
+        {name && !isRange && singleValue && (
           <input
             type="hidden"
             name={name}
-            value={
-              (props as DatePickerSingleProps).value
-                ? dateFnsFormat((props as DatePickerSingleProps).value!, 'yyyy-MM-dd')
-                : ''
-            }
+            value={dateFnsFormat(singleValue, 'yyyy-MM-dd')}
           />
         )}
       </div>
