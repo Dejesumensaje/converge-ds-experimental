@@ -212,7 +212,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       // pressed: primary treatment (not for text-link)
       pressed && getPressedClasses(resolvedVariant),
       // glass: activates the CSS hover rule in button.css
-      glass && resolvedVariant === 'secondary' && 'btn-glass',
+      // text-sidebar-foreground (#fff in light+dark) for AA contrast on the dark glass surface
+      glass && resolvedVariant === 'secondary' && 'btn-glass text-sidebar-foreground',
       className
     )
 
