@@ -17,6 +17,7 @@ export { CountBadge, type CountBadgeProps } from './CountBadge'
 export { Chip, type ChipProps } from './Chip'
 export { Dot, type DotProps } from './Dot'
 export { Input, type InputProps } from './Input'
+export { Textarea, type TextareaProps } from './Textarea'
 export { Switch, type SwitchProps } from './Switch'
 export { Checkbox, type CheckboxProps, type CheckboxSize } from './Checkbox'
 export {

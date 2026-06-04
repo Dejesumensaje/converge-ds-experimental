@@ -5,6 +5,7 @@ import { SpacingSection } from './sections/SpacingSection'
 import { ButtonSection } from './sections/ButtonSection'
 import { ActionBarSection } from './sections/ActionBarSection'
 import { InputSection } from './sections/InputSection'
+import { TextareaSection } from './sections/TextareaSection'
 import { SelectSection } from './sections/SelectSection'
 import { SwitchSection } from './sections/SwitchSection'
 import { CheckboxSection } from './sections/CheckboxSection'
@@ -46,6 +47,7 @@ export const SECTION_REGISTRY: SectionEntry[] = [
   { group: 'actions',      id: 'button',           label: 'Button',          Component: ButtonSection },
   { group: 'actions',      id: 'actionbar',        label: 'ActionBar',       Component: ActionBarSection },
   { group: 'forms',        id: 'input',            label: 'Input',           Component: InputSection },
+  { group: 'forms',        id: 'textarea',         label: 'Textarea',        Component: TextareaSection },
   { group: 'forms',        id: 'select',           label: 'Select',          Component: SelectSection },
   { group: 'forms',        id: 'switch',           label: 'Switch',          Component: SwitchSection },
   { group: 'forms',        id: 'checkbox',         label: 'Checkbox',        Component: CheckboxSection },
