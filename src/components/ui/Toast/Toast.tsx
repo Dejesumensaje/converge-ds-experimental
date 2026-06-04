@@ -167,17 +167,20 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
       {/* Pill inner layout */}
       <div
         className={cn(
-          'flex',
-          // content-driven alignment — same trigger as border-radius:
-          // title-only → center (single line); with description → start (icon pins to title)
-          entry.description ? 'items-start' : 'items-center',
+          'flex items-start',
           'gap-[var(--spacing-s)]',
           'px-[var(--spacing-l)] py-[var(--spacing-m)]',
           'min-w-0',
         )}
       >
-        {/* Semantic icon — decorative, type is communicated via sr-prefix in title */}
-        <Icon size={16} aria-hidden="true" className="shrink-0" />
+        {/*
+          Icon wrapper: height = line-height of the title (body-body2-semibold = 14px × 1.52 = 21.28px).
+          Keeps the icon optically centered on the title line whether the toast has
+          one line (title-only) or two (title + description) — no branch needed.
+        */}
+        <div className="flex items-center justify-center shrink-0 h-[21.28px]">
+          <Icon size={16} aria-hidden="true" />
+        </div>
 
         {/* Text block */}
         <div className="flex flex-col gap-[var(--spacing-xxs)] min-w-0 flex-1">
@@ -193,11 +196,7 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
         </div>
 
         {/* Action + Close row */}
-        <div className={cn(
-          'flex items-center gap-[var(--spacing-xxs)] shrink-0 ml-[var(--spacing-xxs)]',
-          // pin to top only when there's a description (multi-line), let items-center govern otherwise
-          entry.description && 'self-start',
-        )}>
+        <div className="flex items-center gap-[var(--spacing-xxs)] shrink-0 ml-[var(--spacing-xxs)]">
           {entry.action && (
             <RadixToast.Action asChild altText={entry.action.label}>
               <Button
