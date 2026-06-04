@@ -6,6 +6,8 @@ import { ButtonSection } from './sections/ButtonSection'
 import { InputSection } from './sections/InputSection'
 import { SelectSection } from './sections/SelectSection'
 import { SwitchSection } from './sections/SwitchSection'
+import { CheckboxSection } from './sections/CheckboxSection'
+import { RadioSection } from './sections/RadioSection'
 import { ToggleGroupSection } from './sections/ToggleGroupSection'
 import { SearchInputSection } from './sections/SearchInputSection'
 import { TableSection } from './sections/TableSection'
@@ -42,6 +44,8 @@ export const SECTION_REGISTRY: SectionEntry[] = [
   { group: 'forms',        id: 'input',            label: 'Input',           Component: InputSection },
   { group: 'forms',        id: 'select',           label: 'Select',          Component: SelectSection },
   { group: 'forms',        id: 'switch',           label: 'Switch',          Component: SwitchSection },
+  { group: 'forms',        id: 'checkbox',         label: 'Checkbox',        Component: CheckboxSection },
+  { group: 'forms',        id: 'radio',            label: 'RadioGroup',      Component: RadioSection },
   { group: 'forms',        id: 'togglegroup',      label: 'ToggleGroup',     Component: ToggleGroupSection },
   { group: 'forms',        id: 'searchinput',      label: 'SearchInput',     Component: SearchInputSection },
   { group: 'data-display', id: 'table',            label: 'Table',           Component: TableSection },

@@ -1,0 +1,21 @@
+/* ================================================================
+   Checkbox — indicator entrance animation + motion sensitivity
+   ================================================================ */
+
+@layer base {
+  .checkbox-indicator {
+    animation: checkbox-appear 100ms ease-out;
+  }
+
+  @keyframes checkbox-appear {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .checkbox-indicator {
+      animation: none;
+      transition: none;
+    }
+  }
+}

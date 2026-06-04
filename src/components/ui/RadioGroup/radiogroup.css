@@ -1,0 +1,21 @@
+/* ================================================================
+   RadioGroup — indicator entrance animation + motion sensitivity
+   ================================================================ */
+
+@layer base {
+  .radio-indicator {
+    animation: radio-appear 100ms ease-out;
+  }
+
+  @keyframes radio-appear {
+    from { transform: scale(0);   opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .radio-indicator {
+      animation: none;
+      transition: none;
+    }
+  }
+}

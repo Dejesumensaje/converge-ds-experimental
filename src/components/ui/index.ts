@@ -9,6 +9,14 @@ export { Chip, type ChipProps } from './Chip'
 export { Dot, type DotProps } from './Dot'
 export { Input, type InputProps } from './Input'
 export { Switch, type SwitchProps } from './Switch'
+export { Checkbox, type CheckboxProps, type CheckboxSize } from './Checkbox'
+export {
+  RadioGroup,
+  RadioGroupItem,
+  type RadioGroupProps,
+  type RadioGroupItemProps,
+  type RadioGroupSize,
+} from './RadioGroup'
 export { ToggleGroup, type ToggleGroupProps, type ToggleGroupOption } from './ToggleGroup'
 export { SearchInput, type SearchInputProps } from './SearchInput'
 export { Avatar, type AvatarProps } from './Avatar'
