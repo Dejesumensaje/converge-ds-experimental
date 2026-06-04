@@ -167,14 +167,17 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
       {/* Pill inner layout */}
       <div
         className={cn(
-          'flex items-start',
+          'flex',
+          // content-driven alignment — same trigger as border-radius:
+          // title-only → center (single line); with description → start (icon pins to title)
+          entry.description ? 'items-start' : 'items-center',
           'gap-[var(--spacing-s)]',
           'px-[var(--spacing-l)] py-[var(--spacing-m)]',
           'min-w-0',
         )}
       >
         {/* Semantic icon — decorative, type is communicated via sr-prefix in title */}
-        <Icon size={16} aria-hidden="true" className="shrink-0 mt-[1px]" />
+        <Icon size={16} aria-hidden="true" className="shrink-0" />
 
         {/* Text block */}
         <div className="flex flex-col gap-[var(--spacing-xxs)] min-w-0 flex-1">
@@ -190,7 +193,11 @@ function ToastItem({ entry, isTop, onDismiss }: ToastItemProps) {
         </div>
 
         {/* Action + Close row */}
-        <div className="flex items-center gap-[var(--spacing-xxs)] shrink-0 self-start ml-[var(--spacing-xxs)]">
+        <div className={cn(
+          'flex items-center gap-[var(--spacing-xxs)] shrink-0 ml-[var(--spacing-xxs)]',
+          // pin to top only when there's a description (multi-line), let items-center govern otherwise
+          entry.description && 'self-start',
+        )}>
           {entry.action && (
             <RadixToast.Action asChild altText={entry.action.label}>
               <Button
